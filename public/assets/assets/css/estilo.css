@@ -1,0 +1,91 @@
+body{
+	background-image: url('../images/2.jpg');
+	background-attachment: fixed;
+	background-size: cover;
+	background-position: center;
+	height: 100%;
+	width: 100%;
+	top: 0;
+	left: 0;
+	background-color: rgba(255,255,255, .2);
+	font-family: 'Roboto', sans-serif;
+}
+
+/*HEADER*/
+.header{
+	background-color: #006699;
+	padding: 10px;
+	margin-bottom: 30px;
+	position: relative;
+	z-index: 1;
+}
+
+/*FOOTER*/
+.footer{
+	background-color: #ffffff;
+	padding: 50px 40px;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	z-index: 1;
+}
+
+
+
+.container{
+	position: relative;
+	z-index: 1;
+}
+
+/*FORMULARIO*/
+.form-control{
+	padding: 15px;
+}
+
+.form{
+	padding-top: 50px;
+}
+
+
+.bg-fundo{
+	background-color: rgba(0,0,0,.3);
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+}
+
+
+/*CLASSES AUXILIARES INIICIO*/
+.titulo{
+	font-size: 35pt;
+	color: #ffffff;
+	font-family: 'Roboto', sans-serif;;
+}
+
+.color-text{
+	color: #f1f1f1;
+	font-family: 'Roboto', sans-serif;
+	display: flex;
+	flex-direction: row;
+}
+
+.color-blue-btn{
+	background-color: #006699;
+	color: #f1f1f1;
+	padding: 15px;
+}
+
+.padding-default{
+	padding: 20px;
+	z-index: 1;
+}
+
+.text-weigth{
+	font-weight: bolder;
+	/*text-decoration: none;*/
+}
+
+/*CLASSES AUXILIARES FINAL*/

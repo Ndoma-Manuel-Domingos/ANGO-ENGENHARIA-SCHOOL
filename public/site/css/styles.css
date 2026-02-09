@@ -1,0 +1,86 @@
+/* Estilo Geral */
+body {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
+}
+
+h2 {
+    font-weight: bold;
+    color: #003366;
+}
+    
+.parallax {
+    min-height: 400px;
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    margin-bottom: 30px;
+}
+
+#banner-publicitario {
+    background-color: #003366;
+    color: #ffffff;
+}
+
+#historia {
+    padding: 60px 0;
+    background-color: #f8f9fa;
+}
+
+#servicos .card {
+    border: none;
+    transition: transform 0.3s ease-in-out;
+}
+
+#servicos .card:hover {
+    transform: translateY(-10px);
+}
+
+#opiniao-clientes {
+    padding: 60px 0;
+    background-color: #f8f9fa;
+}
+
+#opiniao-clientes .carousel-item .card {
+    max-width: 600px;
+}
+
+/* Footer */
+footer {
+    background-color: #003366;
+    color: #ffffff;
+    padding: 20px 0;
+}
+
+/* Efeito de sombreamento em todos os cards */
+.card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-title{
+  margin: 40px 0;
+  font-size: 30px;
+}
+
+.card-text{
+  font-size: 20px;
+}
+
+.custom-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 400px; /* Ajuste a altura conforme necessário */
+  width: 100%; /* Ajuste a largura conforme necessário */
+  text-align: center;
+}
+
+.custom-card .card-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
