@@ -2620,7 +2620,6 @@ class EstudanteController extends Controller
                 }
             }
 
-
             DB::commit();
 
             Alert::success('Bom trabalho', 'Bolsa Atribuido com sucesso ao estudante!');

@@ -95,6 +95,8 @@ use App\Http\Controllers\{
     HelperController,
     InstituicaoController,
     BolseiroController,
+    ContaPagarController,
+    ContaReceberController,
     InstituicaoEstagioController,
     LaboratorioController,
     LogisticaController,
@@ -1032,26 +1034,16 @@ Route::group(["middleware" => "auth"], function () {
     Route::resource('bolseiros', BolseiroController::class);
     Route::get('/bolseiros-export', [BolseiroController::class, 'export'])->name('web.bolseiros-export');
             
-    // Route::get('bolsas', [InstituicaoController::class, 'instituicao_bolsa'])->name('creditos-educacionais.instituicao-bolsas');
-    // Route::get('associar-bolsas/{id?}', [InstituicaoController::class, 'associar_bolsa'])->name('creditos-educacionais.associar-bolsas');
-    // 
-    // Route::get('associar-bolsas-editar/{id?}', [InstituicaoController::class, 'associar_bolsa_editar'])->name('creditos-educacionais.associar-bolsas-editar');
-    // Route::put('associar-bolsas-editar/{id}', [InstituicaoController::class, 'associar_bolsa_update'])->name('creditos-educacionais.associar-bolsas-update');
-    // 
-    // Route::get('remover-bolsa-bolseiros/{id}', [InstituicaoController::class, 'instituicao_remover_bolsa_bolseiro'])->name('creditos-educacionais.instituicao-remover-bolsa-bolseiros');
-
-
-    // Route::get('home', [InstituicaoController::class, 'index'])->name('creditos-educacionais.instituicao');
-    // Route::get('create', [InstituicaoController::class, 'create'])->name('creditos-educacionais.cadastrar-instituicao');
-    // Route::post('home', [InstituicaoController::class, 'store'])->name('creditos-educacionais.cadastrar-instituicao-store');
-    // Route::get('editar-instituicao/{id}', [InstituicaoController::class, 'edit'])->name('creditos-educacionais.editar-instituicao');
-    // Route::put('editar-instituicao/{id}', [InstituicaoController::class, 'update'])->name('creditos-educacionais.update-instituicao');
-    // Route::get('excluir-instituicao/{id}', [InstituicaoController::class, 'destroy'])->name('creditos-educacionais.delete-instituicao');
-    // Route::get('show-instituicao/{id}', [InstituicaoController::class, 'show'])->name('creditos-educacionais.show-instituicao');
-    // Route::get('imprimir', [InstituicaoController::class, 'instituicaoImprimir'])->name('creditos-educacionais.instituicao-imprmir');
-    // Route::get('excel', [InstituicaoController::class, 'instituicaoExcel'])->name('creditos-educacionais.instituicao-excel');
-
-
+    // GESTÃO FINANCEIRA
+    
+    Route::get('dashboard', [FinanceiroController::class, 'indexPagamento'])->name('financeiros.financeiro-novos-pagamentos');
+    
+    Route::get('contas-pagar-home', [ContaPagarController::class, 'home'])->name('home.contas-pagar');
+    Route::resource('contas-pagar', ContaPagarController::class);
+    Route::get('contas-receber-home', [ContaReceberController::class, 'home'])->name('home.contas-receber');
+    Route::resource('contas-receber', ContaReceberController::class);
+    
+    
     // GESTÃO CANDIDATURAS
     Route::get('/candidaturas/home', [CandidaturaAcademicaController::class, 'candidaturas'])->name('web.candidaturas');
     Route::post('/candidaturas/home', [CandidaturaAcademicaController::class, 'cadastrarcandidaturas'])->name('web.cadastrar-candidaturas');
@@ -1385,10 +1377,8 @@ Route::group(["middleware" => "auth"], function () {
 
     ########################################## FINANCEIROS ############################################################
     Route::prefix('financeiros')->group(function () {
-        Route::get('dashboard', [FinanceiroController::class, 'indexPagamento'])->name('financeiros.financeiro-novos-pagamentos');
         Route::get('estudantes', [FinanceiroController::class, 'estudantes'])->name('financeiros.estudantes');
-        Route::get('contas-pagar', [FinanceiroController::class, 'contasPagar'])->name('financeiros.financeiro-contas-pagar');
-        Route::get('contas-receber', [FinanceiroController::class, 'contasReceber'])->name('financeiros.financeiro-contas-receber');
+        
         Route::get('gestao-dividas', [FinanceiroController::class, 'financeiroGestaoDividas'])->name('financeiros.financeiro-gestao-dividas');
         Route::get('pagamentos-propina', [FinanceiroController::class, 'pagamentosPropina'])->name('financeiros.financeiro-pagamentos-propina');
         Route::get('listagem-servicos', [FinanceiroController::class, 'listagemServicos'])->name('financeiros.listagem-servicos');

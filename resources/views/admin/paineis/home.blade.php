@@ -5,8 +5,7 @@
 <div class="p-4 lg:p-8 space-y-8">
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
         @if (Auth::user()->can('read: ano lectivo'))
-            <div
-                class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                 <div class="flex justify-between items-start mb-4">
                     <span class="material-symbols-outlined p-2 bg-primary/10 text-primary rounded-lg">tune</span>
                     <span
@@ -18,8 +17,7 @@
         @endif
       
         @if (Auth::user()->can('read: estudante'))
-            <div
-                class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                 <div class="flex justify-between items-start mb-4">
                     <span class="material-symbols-outlined p-2 bg-accent/10 text-accent rounded-lg">groups</span>
                     <span
@@ -31,8 +29,7 @@
         @endif
         
         @if (Auth::user()->can('read: professores'))
-            <div
-                class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                 <div class="flex justify-between items-start mb-4">
                     <span class="material-symbols-outlined p-2 bg-accent/10 text-accent rounded-lg">groups</span>
                     <span
@@ -44,8 +41,7 @@
         @endif
         
         @if (Auth::user()->can('read: pagamento'))
-            <div
-                class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                 <div class="flex justify-between items-start mb-4">
                     <span
                         class="material-symbols-outlined p-2 bg-secondary/10 text-secondary rounded-lg">account_balance_wallet</span>

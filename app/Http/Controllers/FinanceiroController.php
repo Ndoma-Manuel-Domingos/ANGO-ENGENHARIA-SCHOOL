@@ -54,6 +54,243 @@ class FinanceiroController extends Controller
     }
 
 
+    public function indexPagamento()
+    {
+        $user = auth()->user();
+
+        if (!$user->can('read: pagamento')) {
+            Alert::error('Acesso restrito', 'Você não possui permissão para esta operação, por favor, contacte o administrador!');
+            return redirect()->back();
+        }
+
+        // Aumenta o tempo de execução
+        ini_set('max_execution_time', 0); // 0 = infinito
+        set_time_limit(0);
+
+        // Aumenta o limite de memória
+        ini_set('memory_limit', '4096M'); // ou mais se necessário
+        
+        $inicioUltimoMes = Carbon::now()->subMonth()->startOfMonth();
+        $fimUltimoMes    = Carbon::now()->subMonth()->endOfMonth();
+
+        $ano = AnoLectivo::findOrFail($this->anolectivoActivo());
+        
+        $queryContaReceber = Pagamento::where('ano_lectivos_id', $ano->id)
+            ->where('caixa_at', 'receita')
+            ->where('status', 'Confirmado')
+            ->where('tipo_factura', 'FR')
+            ->where('anulado', 'N');
+        
+        $pagValReceber = (clone $queryContaReceber)->sum('valor2');
+        
+        $pagValReceberUltimoMes = (clone $queryContaReceber)
+            ->whereBetween('created_at', [$inicioUltimoMes, $fimUltimoMes])
+            ->sum('valor2');    
+        
+        $queryContaPagar = Pagamento::where('ano_lectivos_id', $ano->id)
+            ->where('caixa_at', 'despesa')
+            ->where('status', 'Confirmado')
+            ->where('anulado', 'N');
+        
+        $pagValPagar = (clone $queryContaPagar)->sum('valor2');
+        
+        $pagValPagarUltimoMes = (clone $queryContaPagar)
+            ->whereBetween('created_at', [$inicioUltimoMes, $fimUltimoMes])
+            ->sum('valor2');
+            
+
+        $dividaAcumuladas = CartaoEstudante::with(['estudante.matricula', 'servico'])
+            ->where('ano_lectivos_id', $ano->id)
+            ->whereHas('estudante', function ($query) {
+                $query->where('shcools_id', $this->escolarLogada());
+            })
+            ->whereIn('status', ['divida'])
+            ->sum('preco_unitario');
+
+        $multaAcumuladasPagas = CartaoEstudante::with(['estudante.matricula', 'servico'])
+            ->where('ano_lectivos_id', $ano->id)
+            ->whereHas('estudante', function ($query) {
+                $query->where('shcools_id', $this->escolarLogada());
+            })
+            ->whereIn('status', ['Pago'])
+            ->sum('multa');
+
+        $multaAcumuladasNaoPagas = CartaoEstudante::with(['estudante.matricula', 'servico'])
+            ->where('ano_lectivos_id', $ano->id)
+            ->whereHas('estudante', function ($query) {
+                $query->where('shcools_id', $this->escolarLogada());
+            })
+            ->whereIn('status', ['divida'])
+            ->sum('multa');
+            
+            
+        $total = $pagValReceber + $pagValPagar;
+        
+        $pagValPagar   = (float) ($pagValPagar ?? 0);
+        $pagValReceber = (float) ($pagValReceber ?? 0);
+        
+        if ($pagValReceber > 0) {
+            $saida_percentagem     = ($pagValPagar / $pagValReceber) * 100;
+            $restante_percentagem  = (($pagValReceber - $pagValPagar) / $pagValReceber) * 100;
+        } else {
+            $saida_percentagem     = 0;
+            $restante_percentagem  = 0;
+        }
+
+        $headers = [
+            "escola" => Shcool::with('ensino')->findOrFail($this->escolarLogada()),
+            "titulo" => "Painel Financeiro",
+            "descricao" => env('APP_NAME'),
+            "usuario" => User::findOrFail(Auth::user()->id),
+            "verAnoLectivoActivo" => $ano,
+            'pagamentos' => Pagamento::where('tb_pagamentos.ano_lectivos_id', $ano->id)
+                ->join('users', 'tb_pagamentos.funcionarios_id', '=', 'users.id')
+                ->get(),
+
+            'pagamentosValoresReceber' => $pagValReceber,
+            'pagValReceberUltimoMes' => $pagValReceberUltimoMes,
+            'saida_percentagem' => $saida_percentagem,
+            
+            'pagamentosValoresPagar' => $pagValPagar,
+            'pagValPagarUltimoMes' => $pagValPagarUltimoMes,
+            'restante_percentagem' => $restante_percentagem,
+            
+            'multaAcumuladasPagas' => $multaAcumuladasPagas,
+            'multaAcumuladasNaoPagas' => $multaAcumuladasNaoPagas,
+            'dividaAcumuladas' => $dividaAcumuladas,
+
+        ];
+
+        return view('admin.financeiros.controle', $headers);
+    }
+
+    // conta a pagar
+    public function contasPagar(Request $request)
+    {
+        // Aumenta o tempo de execução
+        ini_set('max_execution_time', 0); // 0 = infinito
+        set_time_limit(0);
+
+        // Aumenta o limite de memória
+        ini_set('memory_limit', '2048M'); // ou mais se necessário
+
+        $user = auth()->user();
+
+        if (!$user->can('read: pagamento')) {
+            Alert::error('Acesso restrito', 'Você não possui permissão para esta operação, por favor, contacte o administrador!');
+            return redirect()->back();
+        }
+
+        if (!$request->ano_lectivo) {
+            $request->ano_lectivo = $this->anolectivoActivo();
+        }
+
+        $pagamentos = Pagamento::when($request->ano_lectivo_id, function ($query, $value) {
+            $query->where('ano_lectivos_id', $value);
+        })
+            ->when($request->servico_id, function ($query, $value) {
+                $query->where('servicos_id', $value);
+            })
+            ->when($request->forma_pagamento_id, function ($query, $value) {
+                $query->where('pagamento_id', $value);
+            })
+            ->when($request->data_inicio, function ($query, $value) {
+                $query->whereDate('data_at', '>=', Carbon::createFromDate($value));
+            })
+            ->when($request->data_final, function ($query, $value) {
+                $query->whereDate('data_at', '<=', Carbon::createFromDate($value));
+            })
+            ->where('status', '=', 'Confirmado')
+            ->whereIn('caixa_at', ['despesa'])
+            ->with(['operador', 'ano', 'servico'])
+            ->where('shcools_id', $this->escolarLogada())
+            ->get();
+
+
+        $headers = [
+            "escola" => Shcool::with('ensino')->findOrFail($this->escolarLogada()),
+
+            "titulo" => "Listagem das pagamentos",
+            "descricao" => "Conta a pagar",
+            "usuario" => User::findOrFail(Auth::user()->id),
+            "verAnoLectivoActivo" => AnoLectivo::find($this->anolectivoActivo()),
+            'pagamentos' => $pagamentos,
+
+            "servicos" => Servico::where('contas', 'despesa')->where('shcools_id', $this->escolarLogada())->get(),
+            "listasanolectivo" => AnoLectivo::where([
+                ['shcools_id', '=', $this->escolarLogada()]
+            ])->get(),
+            "formas_pagamento" => FormaPagamento::where('status_id', 1)->get(),
+            'filtro' => $request->all('data_inicio', 'data_final', 'servico_id', 'forma_pagamento_id', 'ano_lectivo_id'),
+        ];
+
+        return view('admin.financeiros.contas-pagar', $headers);
+    }
+
+    // contas a receber
+    public function contasReceber(Request $request)
+    {
+        // Aumenta o tempo de execução
+        ini_set('max_execution_time', 0); // 0 = infinito
+        set_time_limit(0);
+
+        // Aumenta o limite de memória
+        ini_set('memory_limit', '2048M'); // ou mais se necessário
+
+        if (!$request->ano_lectivo) {
+            $request->ano_lectivo = $this->anolectivoActivo();
+        }
+
+        $user = auth()->user();
+
+        if (!$user->can('read: pagamento')) {
+            Alert::error('Acesso restrito', 'Você não possui permissão para esta operação, por favor, contacte o administrador!');
+            return redirect()->back();
+        }
+
+        $pagamentos = DetalhesPagamentoPropina::with(["pagamento.operador", "servico"])
+            ->when($request->ano_lectivo_id, function ($query, $value) {
+                $query->where('ano_lectivos_id', $value);
+            })
+            ->whereHas('pagamento', function ($q) use ($request) {
+                $q->where('caixa_at', 'receita')
+                    ->where('status', 'Confirmado');
+
+                $q->when($request->forma_pagamento_id, function ($query, $value) {
+                    $query->where('pagamento_id', $value);
+                });
+            })
+            ->when($request->servico_id, function ($query, $value) {
+                $query->where('servicos_id', $value);
+            })
+            ->when($request->data_inicio, function ($query, $value) {
+                $query->whereDate('date_att', '>=', Carbon::createFromDate($value));
+            })
+            ->when($request->data_final, function ($query, $value) {
+                $query->whereDate('date_att', '<=', Carbon::createFromDate($value));
+            })
+            ->where('shcools_id', $this->escolarLogada())
+            // ->limit(1)
+            ->get();
+
+        $headers = [
+            "escola" => Shcool::with('ensino')->findOrFail($this->escolarLogada()),
+            "titulo" => "Listagem de todos os Pagamentos",
+            "descricao" => "Contas a Receber",
+            "usuario" => User::findOrFail(Auth::user()->id),
+            "verAnoLectivoActivo" => AnoLectivo::find($this->anolectivoActivo()),
+            "pagamentos" => $pagamentos,
+            "servicos" => Servico::where('contas', 'receita')->where('shcools_id', $this->escolarLogada())->get(),
+            "listasanolectivo" => AnoLectivo::where('shcools_id', $this->escolarLogada())->get(),
+            "formas_pagamento" => FormaPagamento::where('status_id', 1)->get(),
+            'filtro' => $request->all('data_inicio', 'data_final', 'servico_id', 'forma_pagamento_id', 'ano_lectivo_id'),
+        ];
+
+        return view('admin.financeiros.contas-receber', $headers);
+    }
+
+
+
     public function depositos(Request $request)
     {
         $user = auth()->user();
@@ -263,83 +500,6 @@ class FinanceiroController extends Controller
         return redirect()->back();
     }
 
-    public function indexPagamento()
-    {
-        $user = auth()->user();
-
-        if (!$user->can('read: pagamento')) {
-            Alert::error('Acesso restrito', 'Você não possui permissão para esta operação, por favor, contacte o administrador!');
-            return redirect()->back();
-        }
-
-        // Aumenta o tempo de execução
-        ini_set('max_execution_time', 0); // 0 = infinito
-        set_time_limit(0);
-
-        // Aumenta o limite de memória
-        ini_set('memory_limit', '4096M'); // ou mais se necessário
-
-        $ano = AnoLectivo::findOrFail($this->anolectivoActivo());
-
-        $pagValReceber = Pagamento::where('ano_lectivos_id', $ano->id)
-            ->where('caixa_at', 'receita')
-            ->where('status', 'Confirmado')
-            ->where('tipo_factura', 'FR')
-            ->where('anulado', 'N')
-            ->sum('valor2');
-
-        $pagValPagar = Pagamento::where('ano_lectivos_id', $ano->id)
-            ->where('caixa_at', 'despesa')
-            ->where('status', 'Confirmado')
-            ->where('anulado', 'N')
-            ->sum('valor2');
-
-        $dividaAcumuladas = CartaoEstudante::with(['estudante.matricula', 'servico'])
-            ->where('ano_lectivos_id', $ano->id)
-            ->whereHas('estudante', function ($query) {
-                $query->where('shcools_id', $this->escolarLogada());
-            })
-            ->whereIn('status', ['divida'])
-            ->sum('preco_unitario');
-
-        $multaAcumuladasPagas = CartaoEstudante::with(['estudante.matricula', 'servico'])
-            ->where('ano_lectivos_id', $ano->id)
-            ->whereHas('estudante', function ($query) {
-                $query->where('shcools_id', $this->escolarLogada());
-            })
-            ->whereIn('status', ['Pago'])
-            ->sum('multa');
-
-        $multaAcumuladasNaoPagas = CartaoEstudante::with(['estudante.matricula', 'servico'])
-            ->where('ano_lectivos_id', $ano->id)
-            ->whereHas('estudante', function ($query) {
-                $query->where('shcools_id', $this->escolarLogada());
-            })
-            ->whereIn('status', ['divida'])
-            ->sum('multa');
-
-        $headers = [
-            "escola" => Shcool::with('ensino')->findOrFail($this->escolarLogada()),
-
-            "titulo" => "Painel Financeiro",
-            "descricao" => env('APP_NAME'),
-            "usuario" => User::findOrFail(Auth::user()->id),
-            "verAnoLectivoActivo" => $ano,
-            'pagamentos' => Pagamento::where('tb_pagamentos.ano_lectivos_id', $ano->id)
-                ->join('users', 'tb_pagamentos.funcionarios_id', '=', 'users.id')
-                ->get(),
-
-            'pagamentosValoresReceber' => $pagValReceber,
-            'pagamentosValoresPagar' => $pagValPagar,
-            'multaAcumuladasPagas' => $multaAcumuladasPagas,
-            'multaAcumuladasNaoPagas' => $multaAcumuladasNaoPagas,
-            'dividaAcumuladas' => $dividaAcumuladas,
-
-        ];
-
-        return view('admin.financeiros.controle', $headers);
-    }
-
     public function dadosMensalidades()
     {
 
@@ -403,131 +563,6 @@ class FinanceiroController extends Controller
         ]);
     }
 
-
-    // contas a receber
-    public function contasReceber(Request $request)
-    {
-        // Aumenta o tempo de execução
-        ini_set('max_execution_time', 0); // 0 = infinito
-        set_time_limit(0);
-
-        // Aumenta o limite de memória
-        ini_set('memory_limit', '2048M'); // ou mais se necessário
-
-        if (!$request->ano_lectivo) {
-            $request->ano_lectivo = $this->anolectivoActivo();
-        }
-
-        $user = auth()->user();
-
-        if (!$user->can('read: pagamento')) {
-            Alert::error('Acesso restrito', 'Você não possui permissão para esta operação, por favor, contacte o administrador!');
-            return redirect()->back();
-        }
-
-        $pagamentos = DetalhesPagamentoPropina::with(["pagamento.operador", "servico"])
-            ->when($request->ano_lectivo_id, function ($query, $value) {
-                $query->where('ano_lectivos_id', $value);
-            })
-            ->whereHas('pagamento', function ($q) use ($request) {
-                $q->where('caixa_at', 'receita')
-                    ->where('status', 'Confirmado');
-
-                $q->when($request->forma_pagamento_id, function ($query, $value) {
-                    $query->where('pagamento_id', $value);
-                });
-            })
-            ->when($request->servico_id, function ($query, $value) {
-                $query->where('servicos_id', $value);
-            })
-            ->when($request->data_inicio, function ($query, $value) {
-                $query->whereDate('date_att', '>=', Carbon::createFromDate($value));
-            })
-            ->when($request->data_final, function ($query, $value) {
-                $query->whereDate('date_att', '<=', Carbon::createFromDate($value));
-            })
-            ->where('shcools_id', $this->escolarLogada())
-            // ->limit(1)
-            ->get();
-
-        $headers = [
-            "escola" => Shcool::with('ensino')->findOrFail($this->escolarLogada()),
-            "titulo" => "Listagem de todos os Pagamentos",
-            "descricao" => "Contas a Receber",
-            "usuario" => User::findOrFail(Auth::user()->id),
-            "verAnoLectivoActivo" => AnoLectivo::find($this->anolectivoActivo()),
-            "pagamentos" => $pagamentos,
-            "servicos" => Servico::where('contas', 'receita')->where('shcools_id', $this->escolarLogada())->get(),
-            "listasanolectivo" => AnoLectivo::where('shcools_id', $this->escolarLogada())->get(),
-            "formas_pagamento" => FormaPagamento::where('status_id', 1)->get(),
-            'filtro' => $request->all('data_inicio', 'data_final', 'servico_id', 'forma_pagamento_id', 'ano_lectivo_id'),
-        ];
-
-        return view('admin.financeiros.contas-receber', $headers);
-    }
-
-    // conta a pagar
-    public function contasPagar(Request $request)
-    {
-        // Aumenta o tempo de execução
-        ini_set('max_execution_time', 0); // 0 = infinito
-        set_time_limit(0);
-
-        // Aumenta o limite de memória
-        ini_set('memory_limit', '2048M'); // ou mais se necessário
-
-        $user = auth()->user();
-
-        if (!$user->can('read: pagamento')) {
-            Alert::error('Acesso restrito', 'Você não possui permissão para esta operação, por favor, contacte o administrador!');
-            return redirect()->back();
-        }
-
-        if (!$request->ano_lectivo) {
-            $request->ano_lectivo = $this->anolectivoActivo();
-        }
-
-        $pagamentos = Pagamento::when($request->ano_lectivo_id, function ($query, $value) {
-            $query->where('ano_lectivos_id', $value);
-        })
-            ->when($request->servico_id, function ($query, $value) {
-                $query->where('servicos_id', $value);
-            })
-            ->when($request->forma_pagamento_id, function ($query, $value) {
-                $query->where('pagamento_id', $value);
-            })
-            ->when($request->data_inicio, function ($query, $value) {
-                $query->whereDate('data_at', '>=', Carbon::createFromDate($value));
-            })
-            ->when($request->data_final, function ($query, $value) {
-                $query->whereDate('data_at', '<=', Carbon::createFromDate($value));
-            })
-            ->where('status', '=', 'Confirmado')
-            ->whereIn('caixa_at', ['despesa'])
-            ->with(['operador', 'ano', 'servico'])
-            ->where('shcools_id', $this->escolarLogada())
-            ->get();
-
-
-        $headers = [
-            "escola" => Shcool::with('ensino')->findOrFail($this->escolarLogada()),
-
-            "titulo" => "Listagem das pagamentos",
-            "descricao" => "Conta a pagar",
-            "usuario" => User::findOrFail(Auth::user()->id),
-            "verAnoLectivoActivo" => AnoLectivo::find($this->anolectivoActivo()),
-            'pagamentos' => $pagamentos,
-
-            "servicos" => Servico::where('contas', 'despesa')->where('shcools_id', $this->escolarLogada())->get(),
-            "listasanolectivo" => AnoLectivo::where([
-                ['shcools_id', '=', $this->escolarLogada()]
-            ])->get(),
-            "formas_pagamento" => FormaPagamento::where('status_id', 1)->get(),
-            'filtro' => $request->all('data_inicio', 'data_final', 'servico_id', 'forma_pagamento_id', 'ano_lectivo_id'),
-        ];
-
-        return view('admin.financeiros.contas-pagar', $headers);
-    }
 
 
     public function buscasGerais(Request $request)

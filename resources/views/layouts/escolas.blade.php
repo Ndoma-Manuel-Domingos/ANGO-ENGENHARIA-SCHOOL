@@ -44,7 +44,8 @@
         }
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }.dropdown-toggle:checked ~ .sidebar-dropdown-content {
+        }
+        .dropdown-toggle:checked ~ .sidebar-dropdown-content {
             max-height: 300px;
             margin-top: 0.25rem;
             margin-bottom: 0.5rem;
@@ -133,6 +134,17 @@
             font-size: 14px;
         }
         
+        .custom-input{
+            height: 44px;
+            background-color: #f3f4f6;
+            border: 1px solid #d1d5db;
+            padding: 6px 10px;
+            display: flex;
+            align-items: center;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        
         main {
             transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out;
         }
@@ -192,16 +204,15 @@
                     for="financial-check">
                     <div class="flex items-center gap-3">
                         <span class="material-symbols-outlined !fill-1">payments</span>
-                        <p class="text-sm font-semibold">Financial</p>
+                        <p class="text-sm font-semibold">Financeiro</p>
                     </div>
                     <span class="material-symbols-outlined text-sm transition-transform expand-icon">expand_more</span>
                 </label>
                 <div class="sidebar-dropdown-content bg-slate-50/50 dark:bg-slate-800/30 rounded-lg ml-4 space-y-1">
-                    <a class="block px-8 py-2 text-xs text-slate-500 hover:text-primary dark:hover:text-primary" href="#">Overview</a>
-                    <a class="block px-8 py-2 text-xs text-slate-500 hover:text-primary dark:hover:text-primary"
-                        href="#">Invoices</a>
-                    <a class="block px-8 py-2 text-xs text-slate-500 hover:text-primary dark:hover:text-primary"
-                        href="#">Expenses</a>
+                    <a class="block px-8 py-2 text-xs text-slate-500 hover:text-primary dark:hover:text-primary" href="{{ route('financeiros.financeiro-novos-pagamentos') }}">Controle</a>
+                    <a class="block px-8 py-2 text-xs text-slate-500 hover:text-primary dark:hover:text-primary" href="#">Mapa de Pagamentos</a>
+                    <a class="block px-8 py-2 text-xs text-slate-500 hover:text-primary dark:hover:text-primary" href="{{ route('home.contas-receber') }}">Entradas</a>
+                    <a class="block px-8 py-2 text-xs text-slate-500 hover:text-primary dark:hover:text-primary" href="{{ route('home.contas-pagar') }}">Saídas</a>
                 </div>
             </div>
             
@@ -256,7 +267,6 @@
                     @endif
                 </div>
             </div>
-            
             @endif
             
             <div class="relative">
@@ -349,12 +359,6 @@
                 </div>
             </div>
             
-            <div
-                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors">
-                <span class="material-symbols-outlined">table_chart</span>
-                <p class="text-sm font-medium">Support Table</p>
-            </div>
-            
         </nav>
         
         <div class="p-4 border-t border-slate-200 dark:border-slate-800">
@@ -441,15 +445,13 @@
                 </div>
                 
                 <div class="relative profile-group">
-                    <button
-                        class="flex items-center gap-2 p-1 pl-1 pr-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all focus:outline-none">
+                    <button class="flex items-center gap-2 p-1 pl-1 pr-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all focus:outline-none">
                         <img alt="Sarah Jenkins"
                             class="size-8 rounded-full object-cover border border-slate-200 dark:border-slate-700"
                             src="https://lh3.googleusercontent.com/aida-public/AB6AXuAoNV-d4mdvQG147zUDY4qKO9uRu9YCgusGkulUI-ICn7wc2arG0E6mczw-Z7U2kil6ktsjQ2iizoumydF7O58He5-_yN0TGbaviufNXbrTXRlIBvqrtEuIX_XsvvpKe_7Wpj-caKRXCjD-hSH67Iq0cTgA7ggeQyCNrcHlyRtrwR6-iknqV8FTktBfpBz8wuaL5lav_EF4sUYIYxZ6u8LrofqkzI_PiahcjbGM7CKXxOy6UWKsZyh6Trb53Gx9yT8EMaLDtMiZkUjV" />
                         <span class="material-symbols-outlined text-slate-400 text-sm">expand_more</span>
                     </button>
-                    <div
-                        class="profile-dropdown-content absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50">
+                    <div class="profile-dropdown-content absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50">
                         <div class="p-4 border-b border-slate-100 dark:border-slate-800">
                             <p class="text-sm font-bold">{{ Auth::user()->nome }}</p>
                             <p class="text-xs text-slate-500">{{ Auth::user()->email }}</p>
@@ -487,11 +489,11 @@
 
         
     </main>
-
 </body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         function inicializarTabela(selector) {
             const tabela = $(selector).DataTable({

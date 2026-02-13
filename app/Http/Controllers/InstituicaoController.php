@@ -98,7 +98,6 @@ class InstituicaoController extends Controller
             "tipo" => 'required',
         ]);
         
-        
         try {
             DB::beginTransaction();
             // Realizar operações de banco de dados aqui
