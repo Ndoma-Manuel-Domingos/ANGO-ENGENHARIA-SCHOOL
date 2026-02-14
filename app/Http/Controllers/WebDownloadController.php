@@ -1408,127 +1408,6 @@ class WebDownloadController extends Controller
         return $pdf->stream('mapa-pagamentos-por-curso.pdf');
     }
 
-    // retificado
-    public function financeiroPagamentoReceber(Request $request)
-    {
-        // Aumenta o tempo de execução
-        ini_set('max_execution_time', 0); // 0 = infinito
-        set_time_limit(0);
-
-        // Aumenta o limite de memória
-        ini_set('memory_limit', '4096M'); // 4 GB
-
-        if (!$request->ano_lectivo) {
-            $request->ano_lectivo = $this->anolectivoActivo();
-        }
-
-        $escola = Shcool::with('ensino')->findOrFail($this->escolarLogada());
-
-        $pagamentos = DetalhesPagamentoPropina::with(["pagamento.operador", "servico"])
-            ->when($request->ano_lectivo_id, function ($query, $value) {
-                $query->where('ano_lectivos_id', $value);
-            })
-            ->whereHas('pagamento', function ($q) use ($request) {
-                $q->where('caixa_at', 'receita')->where('status', 'Confirmado');
-                $q->when($request->forma_pagamento_id, function ($query, $value) {
-                    $query->where('pagamento_id', $value);
-                });
-                $q->when($request->caixa_id, function ($query, $value) {
-                    $query->where('caixa_id', $value);
-                })
-                    ->when($request->user_id, function ($query, $value) {
-                        $query->where('funcionarios_id', $value);
-                    })
-                    ->when($request->type, function ($query, $value) {
-                        $query->where('caixa_at', $value);
-                    });
-            })
-            ->when($request->servico_id, function ($query, $value) {
-                $query->where('servicos_id', $value);
-            })
-            ->when($request->data_inicio, function ($query, $value) {
-                $query->whereDate('date_att', '>=', Carbon::createFromDate($value));
-            })
-            ->when($request->data_final, function ($query, $value) {
-                $query->whereDate('date_att', '<=', Carbon::createFromDate($value));
-            })
-            ->where('shcools_id', $escola->id)
-        ->get();
-
-        // Caminho da imagem
-        $logotipoPath = public_path("uploads/logos/{$escola->logotipo}");
-        $temLogotipo = File::exists($logotipoPath);
-
-        $headers = [
-            "escola" => $escola,
-            "logotipo" => $temLogotipo ? $logotipoPath : null,
-            "titulo" => "Pagamentos",
-            "verAnoLectivoActivo" => AnoLectivo::find($this->anolectivoActivo()),
-            "pagamentos" => $pagamentos,
-            "servico" => Servico::find($request->servico),
-            "requests" => $request->all('data_inicio', 'data_final', 'all'),
-        ];
-
-        $pdf = \PDF::loadView('downloads.financeiros.ficha-pagamentos-receber', $headers)->setPaper('A4', 'portrait');
-        return $pdf->stream('turmas.financeiros.ficha-pagamentos-receber.pdf');
-    }
-
-    public function financeiroPagamentoPagar(Request $request)
-    {
-        // Aumenta o tempo de execução
-        ini_set('max_execution_time', 0); // 0 = infinito
-        set_time_limit(0);
-
-        // Aumenta o limite de memória
-        ini_set('memory_limit', '4096M'); // ou mais se necessário
-
-        if (!$request->ano_lectivo) {
-            $request->ano_lectivo = $this->anolectivoActivo();
-        }
-
-        $pagamentos = Pagamento::when($request->data_inicio, function ($query, $value) {
-            $query->whereDate('data_at', '>=', Carbon::createFromDate($value));
-        })
-            ->when($request->data_final, function ($query, $value) {
-                $query->whereDate('data_at', '<=', Carbon::createFromDate($value));
-            })
-            ->when($request->ano_lectivo_id, function ($query, $value) {
-                $query->where('ano_lectivos_id', $value);
-            })
-            ->when($request->forma_pagamento_id, function ($query, $value) {
-                $query->where('pagamento_id', $value);
-            })
-            ->when($request->servico_id, function ($query, $value) {
-                $query->where('servicos_id', $value);
-            })
-            ->when($request->type, function ($query, $value) {
-                $query->where('caixa_at', $value);
-            })
-            ->with(['servico', 'operador'])
-            ->get();
-
-
-
-        $escola = Shcool::with('ensino')->findOrFail($this->escolarLogada());
-
-        // Caminho da imagem
-        $logotipoPath = public_path("uploads/logos/{$escola->logotipo}");
-        $temLogotipo = File::exists($logotipoPath);
-
-        $headers = [
-            "escola" => $escola,
-            "logotipo" => $temLogotipo ? $logotipoPath : null,
-            "titulo" => "LISTA DE PAGAMENTOS A PAGAR",
-
-            "verAnoLectivoActivo" => AnoLectivo::find($this->anolectivoActivo()),
-            'pagamentos' => $pagamentos,
-            "servico" => Servico::find($request->servico),
-            "requests" => $request->all('data_inicio', 'data_final'),
-        ];
-
-        $pdf = \PDF::loadView('downloads.financeiros.ficha-pagamentos-pagar', $headers); //->setPaper('A4', 'landscape');
-        return $pdf->stream('turmas.financeiros.ficha-pagamentos-pagar.pdf');
-    }
 
     // ficha ou recibo de pagamento de propinas
     public function fichaPagamentoPropina($code)
@@ -1810,8 +1689,6 @@ class WebDownloadController extends Controller
         $escola = Shcool::findOrFail($pagamento->estudantes_id);
 
         $detalhe = DetalhesPagamentoPropina::where('pagamentos_id', '=', $pagamento->id)->get();
-
-
 
         $escola = Shcool::with('ensino')->findOrFail($this->escolarLogada());
 

@@ -97,6 +97,7 @@ use App\Http\Controllers\{
     BolseiroController,
     ContaPagarController,
     ContaReceberController,
+    GestaoDividaController,
     InstituicaoEstagioController,
     LaboratorioController,
     LogisticaController,
@@ -1040,8 +1041,34 @@ Route::group(["middleware" => "auth"], function () {
     
     Route::get('contas-pagar-home', [ContaPagarController::class, 'home'])->name('home.contas-pagar');
     Route::resource('contas-pagar', ContaPagarController::class);
+    Route::get('/contas-pagar-export', [ContaPagarController::class, 'export'])->name('web.contas-pagar-export');
+    
     Route::get('contas-receber-home', [ContaReceberController::class, 'home'])->name('home.contas-receber');
     Route::resource('contas-receber', ContaReceberController::class);
+    Route::get('/contas-receber-export', [ContaReceberController::class, 'export'])->name('web.contas-receber-export');
+    
+    Route::get('gestao-dividas', [GestaoDividaController::class, 'home'])->name('home.gestao-dividas');
+    Route::resource('dividas', GestaoDividaController::class);
+    Route::get('/dividas-export', [GestaoDividaController::class, 'export'])->name('web.dividas-export');
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     // GESTÃO CANDIDATURAS
@@ -1379,7 +1406,6 @@ Route::group(["middleware" => "auth"], function () {
     Route::prefix('financeiros')->group(function () {
         Route::get('estudantes', [FinanceiroController::class, 'estudantes'])->name('financeiros.estudantes');
         
-        Route::get('gestao-dividas', [FinanceiroController::class, 'financeiroGestaoDividas'])->name('financeiros.financeiro-gestao-dividas');
         Route::get('pagamentos-propina', [FinanceiroController::class, 'pagamentosPropina'])->name('financeiros.financeiro-pagamentos-propina');
         Route::get('listagem-servicos', [FinanceiroController::class, 'listagemServicos'])->name('financeiros.listagem-servicos');
         Route::get('listagem-servicos/{id}', [FinanceiroController::class, 'servicosEdit'])->name('financeiros.listagem-servicos-edit');
@@ -1394,7 +1420,6 @@ Route::group(["middleware" => "auth"], function () {
     Route::post('/estudantes/pagamento-propina', [FinanceiroController::class, 'estudantesPagamentoPropinaCreate'])->name('web.estudantes-pagamento-propina-create');
     Route::get('/estudantes/efectuar-pagamento-especias', [FinanceiroController::class, 'estudantesEfectuarPagamentoEspeciais'])->name('web.estudantes-efectuar-pagamento-especias');
     Route::post('/estudantes/efectuar-pagamento-especias', [FinanceiroController::class, 'estudantesEfectuarPagamentoEspeciaisStore'])->name('web.estudantes-efectuar-pagamento-especias-store');
-    Route::get('/financeiro/limpar-pagamento/{id}', [FinanceiroController::class, 'limparPagamento'])->name('web.financeiro-limpar-pagamento');
 
     Route::get('/financeiro/pagamentos', [FinanceiroController::class, 'financeiroPagamento'])->name('web.financeiro-pagamentos');
     Route::get('/financeiro/concluir-pagamentos', [FinanceiroController::class, 'concluirPagamento'])->name('web.concluir-pagamentos');
@@ -1476,8 +1501,6 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/download/ficha-pagamentos/{data1?}/{data2?}/{filtro?}', [WebDownloadController::class, 'financeiroPagamento'])->name('ficha-pagamentos');
     Route::get('/download/ficha-facturas-aliquidar', [WebDownloadController::class, 'facturaAliquidarPagamento'])->name('factura-aliquidar-pagamentos');
     Route::get('/download/ficha-pagamentos-cancelados', [WebDownloadController::class, 'financeiroPagamentoCancelado'])->name('ficha-pagamentos-cancelados');
-    Route::get('/download/ficha-pagamentos-receber', [WebDownloadController::class, 'financeiroPagamentoReceber'])->name('ficha-pagamentos-receber');
-    Route::get('/download/ficha-pagamentos-pagar', [WebDownloadController::class, 'financeiroPagamentoPagar'])->name('ficha-pagamentos-pagar');
 
     Route::get('/download/listar-estudantes-novos', [WebDownloadController::class, 'listarEstudantesNovos'])->name('listar-estudantes-novos');
     Route::get('/download/listar-estudantes-antigos', [WebDownloadController::class, 'listarEstudantesAntigos'])->name('listar-estudantes-antigo');
@@ -1647,7 +1670,6 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/turma-horarios/{id}/imprimir', [PrinterController::class, 'turmaHorarioImprimir'])->name('turma-horarios-imprmir');
     Route::get('/turma-servicos/{id}/imprimir', [PrinterController::class, 'turmaServicoImprimir'])->name('turma-servicos-imprmir');
 
-    Route::get('/estuadantes-devedores/imprimir', [PrinterController::class, 'estudantesDevedoresImprimir'])->name('estudantes-devedores-imprmir');
     Route::get('listagem-servicos-imprimir', [PrinterController::class, 'listagemServicosImprimir'])->name('financeiros.listagem-servicos-imprmir');
 
 

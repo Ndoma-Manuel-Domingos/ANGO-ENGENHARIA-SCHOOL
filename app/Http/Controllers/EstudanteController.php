@@ -2928,8 +2928,6 @@ class EstudanteController extends Controller
 
         $turma = Turma::findOrFail($estudanteTurma->turmas_id);
 
-
-
         $headers = [
             "escola" => Shcool::with('ensino')->findOrFail($this->escolarLogada()),
 

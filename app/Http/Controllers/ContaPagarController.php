@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use Illuminate\Support\Facades\File;
 use App\Models\web\anolectivo\AnoLectivo;
 use App\Models\web\calendarios\Pagamento;
 use App\Models\web\calendarios\Servico;
@@ -11,9 +11,6 @@ use RealRashid\SweetAlert\Facades\Alert;
 use App\Models\FormaPagamento;
 use App\Models\Shcool;
 use Carbon\Carbon;
-
-use Illuminate\Support\Facades\Auth;
-
 
 class ContaPagarController extends Controller
 {
@@ -63,8 +60,8 @@ class ContaPagarController extends Controller
             return redirect()->back();
         }
 
-        if (!$request->ano_lectivo) {
-            $request->ano_lectivo = $this->anolectivoActivo();
+        if (!$request->ano_lectivo_id) {
+            $request->ano_lectivo_id = $this->anolectivoActivo();
         }
         
         $paginacao = $request->paginacao ?? 5;
@@ -89,11 +86,74 @@ class ContaPagarController extends Controller
             ->with(['operador', 'ano', 'servico'])
         ->where('shcools_id', $this->escolarLogada());
 
-
         return response()->json(
             $query->orderByDesc('id')->paginate($paginacao)
         );
 
     }
+
+    public function export(Request $request)
+    {
+        // Aumenta o tempo de execução
+        ini_set('max_execution_time', 0); // 0 = infinito
+        set_time_limit(0);
+
+        // Aumenta o limite de memória
+        ini_set('memory_limit', '4096M'); // 4 GB
+
+        if (!$request->ano_lectivo_id) {
+            $request->ano_lectivo_id = $this->anolectivoActivo();
+        }
+
+        $escola = Shcool::with('ensino')->findOrFail($this->escolarLogada());
+
+        $pagamentos = Pagamento::when($request->data_inicio, function ($query, $value) {
+            $query->whereDate('data_at', '>=', Carbon::createFromDate($value));
+        })
+            ->when($request->data_final, function ($query, $value) {
+                $query->whereDate('data_at', '<=', Carbon::createFromDate($value));
+            })
+            ->when($request->ano_lectivo_id, function ($query, $value) {
+                $query->where('ano_lectivos_id', $value);
+            })
+            ->when($request->forma_pagamento_id, function ($query, $value) {
+                $query->where('pagamento_id', $value);
+            })
+            ->when($request->servico_id, function ($query, $value) {
+                $query->where('servicos_id', $value);
+            })
+            ->when($request->type, function ($query, $value) {
+                $query->where('caixa_at', $value);
+            })
+            ->with(['servico', 'operador'])
+        ->get();
+
+        $titulo = "LISTA DE PAGAMENTOS A PAGAR";
+
+        // Caminho da imagem
+        $logotipoPath = public_path("uploads/logos/{$escola->logotipo}");
+        $temLogotipo = File::exists($logotipoPath);
+        
+        $headers = [
+            "escola" => $escola,
+            "logotipo" => $temLogotipo ? $logotipoPath : null,
+            "titulo" => $titulo,
+            "verAnoLectivoActivo" => AnoLectivo::find($request->ano_lectivo_id),
+            "pagamentos" => $pagamentos,
+            "servico" => Servico::find($request->servico_id),
+            "pagamentos" => $pagamentos,
+            "requests" => $request->all('data_inicio', 'data_final', 'all'),
+        ];
+                
+        $documentType = $request->documentType;
+        
+        if($documentType === 'excel') {
+            //return Excel::download(new SalaExport, 'salas.xlsx');
+        } else {
+            $pdf = \PDF::loadView('downloads.financeiros.ficha-pagamentos-pagar', $headers); //->setPaper('A4', 'landscape');
+            return $pdf->stream('turmas.financeiros.ficha-pagamentos-pagar.pdf');
+        }
+    }
+    
 
 }

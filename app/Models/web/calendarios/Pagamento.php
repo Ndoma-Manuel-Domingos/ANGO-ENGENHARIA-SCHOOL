@@ -286,7 +286,6 @@ class Pagamento extends Model
         return $forma ? $forma->descricao : 'Númerario';
     }
 
-
     function obterCaracteres($texto)
     {
         $posicoes = [1, 11, 21, 31];

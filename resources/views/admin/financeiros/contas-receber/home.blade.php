@@ -20,15 +20,17 @@
                 <span class="material-symbols-outlined">arrow_back</span>
                 <span>Voltar</span>
             </a>
+            <button id="btnExportPDF" type="button" class="inline-flex items-center justify-center gap-2 h-11 px-6 bg-red-500 text-white rounded-xl font-bold text-sm shadow-lg shadow-success/30 hover:bg-red-500/90 hover:-translate-y-0.5 transition-all">
+                <span class="material-symbols-outlined">picture_as_pdf</span>
+                <span>Imprimir PDF</span>
+            </button>
         </div>
     </div>
-    
     
     <div class="bg-white dark:bg-sidebar-dark rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
         <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col lg:flex-row gap-4 lg:items-center justify-between">
             <div class="flex flex-wrap gap-3">
                 <div class="relative min-w-[240px]">
-                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
                     <input class="custom-input w-full h-10 pl-9 pr-4 text-sm bg-slate-50 dark:bg-slate-800 border-none rounded-lg focus:ring-2 focus:ring-primary" id="designacao_geral" placeholder="Search by name or code..." type="text" />
                 </div>
                 
@@ -61,6 +63,15 @@
                     <option value="50">50</option>
                     <option value="100">100</option>
                 </select>
+                
+                <div class="relative min-w-[150px]">
+                    <input class="custom-input w-full h-10 pl-9 pr-4 text-sm bg-slate-50 dark:bg-slate-800 border-none rounded-lg focus:ring-2 focus:ring-primary" id="dateInicio" placeholder="" type="date" />
+                </div>
+                
+                <div class="relative min-w-[150px]">
+                    <input class="custom-input w-full h-10 pl-9 pr-4 text-sm bg-slate-50 dark:bg-slate-800 border-none rounded-lg focus:ring-2 focus:ring-primary" id="dateFinal" placeholder="" type="date" />
+                </div>
+                
             </div>
         </div>
         <div class="overflow-x-auto">
@@ -112,11 +123,12 @@
                             <thead>
                                 <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
                                     <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Codigo</th>
-                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Disciplina</th>
-                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Abreviação</th>
-                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Categoria</th>
-                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Peso</th>
-                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider text-right">Actions</th>
+                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Serviço</th>
+                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Quantidade</th>
+                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Preço Unitário</th>
+                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Multa</th>
+                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Desconto</th>
+                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Total</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100 dark:divide-slate-800" id="tbody_cursos">
@@ -126,16 +138,12 @@
                     </div>
                 </section>
             </div>
-        
-            <div class="p-6 border-t border-slate-100 dark:border-slate-800 flex justify-end shrink-0">
-                <button id="closeModalView" class="h-11 px-6 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
-                    Fechar
-                </button>
-            </div>
+            
+            <div id="footerData"></div>
+            
         </div>
     </div>
-    
-    
+       
     
 </div>
 @endsection
@@ -144,9 +152,7 @@
 <script>
     
     const modalView = document.getElementById('modalView');
-    const closeModalView = document.getElementById('closeModalView');
-    
-    closeModalView.addEventListener('click', () => { modalView.classList.add('hidden'); });
+
 
     $(document).ready(function(){
         load();
@@ -167,17 +173,74 @@
         load(1);
     });
     
+    $("#dateInicio").change(function(){
+        load(1);
+    });
+    
+    $("#dateFinal").change(function(){
+        load(1);
+    });
+    
     $("#paginacao").change(function(){
         load(1);
     });
     
-    function formatar_moeda(value) {
-        return value.toLocaleString('pt-AO', {
-            style: 'currency',
-            currency: 'AOA'
+    function exportData(documentType) {
+        // Reaproveitando os filtros da loadSeries
+        const data = {
+            servico_id: $("#servicoId").val(),
+            ano_lectivo_id: $("#anosId").val(),
+            type:  "receita",
+            data_inicio: $("#dateInicio").val(),
+            data_final: $("#dateFinal").val(),
+            forma_pagamento_id: $("#formaPagamentoId").val(),
+            documentType: documentType // "excel" ou "pdf"
+        };
+    
+        $.ajax({
+            type: "GET",
+            url: `/contas-receber-export`, // rota que vai gerar o arquivo
+            data: data,
+            xhrFields: {
+                responseType: 'blob' // importante para receber o arquivo
+            },
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') // se Laravel
+            },
+            beforeSend: function() {
+                progressBeforeSend("Gerando arquivo...");
+            },
+            success: function(blob, status, xhr) {
+                Swal.close();
+    
+                // Pegando nome do arquivo do header
+                let filename = documentType === 'excel' ? 'contas-receber.xlsx' : 'contas-receber.pdf';
+                const disposition = xhr.getResponseHeader('Content-Disposition');
+                if (disposition && disposition.indexOf('attachment') !== -1) {
+                    const match = disposition.match(/filename="?(.+)"?/);
+                    if (match[1]) filename = match[1];
+                }
+    
+                // Criar link para download
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            },
+            error: function(xhr) {
+                Swal.close();
+                console.error("Erro ao gerar arquivo", xhr);
+            }
         });
     }
         
+    $("#btnExportPDF").click(() => exportData("pdf"));
+    
+
     function load(page=1){
         $.ajax({
             type: "GET",
@@ -187,6 +250,8 @@
                 designacao_geral: $("#designacao_geral").val(),
                 servico_id: $("#servicoId").val(),
                 ano_lectivo_id: $("#anosId").val(),
+                data_inicio: $("#dateInicio").val(),
+                data_final: $("#dateFinal").val(),
                 forma_pagamento_id: $("#formaPagamentoId").val(),
                 paginacao: $("#paginacao").val(),
             },
@@ -279,45 +344,61 @@
                 Swal.close();
                 modalView.classList.remove('hidden');
                 
+                let rota = "{{ route('ficha-pagamento-propina', ':id') }}";
+                rota = rota.replace(':id', data.ficha);
+                
                 let h = `
                     <div class="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800 shrink-0">
                         <div>
                             <h3 class="text-xl font-bold text-slate-900 dark:text-white">${data.next_factura}</h3>
-                            <p class="text-sm text-slate-500 font-medium">
-                                <div class="flex items-center gap-2">
-                                    ${data.moeda}
-                                </div>
-                            </p>
                         </div>
                         <button onclick="document.getElementById('modalView').classList.add('hidden')"
                             class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg transition-colors">
                             <span class="material-symbols-outlined">close</span>
                         </button>
                     </div>
+                    
+                    <div class="p-6 overflow-y-auto custom-scrollbar space-y-2 flex-1">
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">${data.estudante.nome} ${data.estudante.sobre_nome}</h3>
+                        
+                        <p class="text-sm text-slate-500 font-medium">Total: ${formatar_moeda(data.total_incidencia + data.total_iva)}</p>
+                        <p class="text-sm text-slate-500 font-medium">Forma de Pagamento: ${data.tipo_pagamento}</p>
+                        <p class="text-sm text-slate-500 font-medium">Ano Lectivo: ${data.ano.ano}</p>
+                        <p class="text-sm text-slate-500 font-medium">Operador: ${data.operador.nome}</p>
+                        <p class="text-sm text-slate-500 font-medium">Data: ${formatarData(data.created_at)}</p>
+                        <p class="text-sm text-slate-500 font-medium">Observação: ${data.observacao ?? "Sem descrição"}</p>
+                    </div>
                 `;
                 
                 $("#headerData").html(h);
                 
-                // let rows_cursos = "";
-                // data.result.forEach(s => {
-                //     rows_cursos += `<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                //             <td class="px-4 py-2 text-sm font-bold text-primary">${s.id}</td>
-                //             <td class="px-4 py-2 text-sm font-medium">${s.disciplina.disciplina}</td>
-                //             <td class="px-4 py-2 text-sm font-medium">${s.disciplina.abreviacao}</td>
-                //             <td class="px-4 py-2 text-sm font-medium">${s.categoria.nome}</td>
-                //             <td class="px-4 py-2 text-sm font-medium">${s.peso}</td>
-                //             <td class="px-4 py-2 flex justify-end gap-1">
-                //                 <a href="#" class="editar_disciplina_curso p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all" title="Editar" data-id="${s.id}">
-                //                     <span class="material-symbols-outlined text-xl">edit</span>
-                //                 </a>
-                //                 <a href="#" class="deletar_disciplina_curso p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all" title="Eliminar" data-id="${s.id}">
-                //                     <span class="material-symbols-outlined text-xl">delete</span>
-                //                 </a>
-                //             </td>
-                //         </tr>`;
-                //     }
-                // );
-                // $("#tbody_cursos").html(rows_cursos);
+                let f = `
+                    <div class="p-6 border-t border-slate-100 dark:border-slate-800 flex justify-end shrink-0"> 
+                        <a href='${rota}' target="_blank" class="h-11 px-6 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+                            Imprimir
+                        </a>
+                        <button onclick="document.getElementById('modalView').classList.add('hidden')" class="mx-2 h-11 px-6 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+                            Fechar
+                        </button>
+                    </div>
+                `;
+                
+                $("#footerData").html(f);
+                
+                let rows_items = "";
+                data.items.forEach(s => {
+                    rows_items += `<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                            <td class="px-4 py-2 text-sm font-bold text-primary">${s.id}</td>
+                            <td class="px-4 py-2 text-sm font-medium">${s.servico.servico}</td>
+                            <td class="px-4 py-2 text-sm font-medium">${s.quantidade}</td>
+                            <td class="px-4 py-2 text-sm font-medium">${formatar_moeda(s.preco)}</td>
+                            <td class="px-4 py-2 text-sm font-medium">${formatar_moeda(s.multa)}</td>
+                            <td class="px-4 py-2 text-sm font-medium">${formatar_moeda(s.desconto_valor)}</td>
+                            <td class="px-4 py-2 text-sm font-medium">${formatar_moeda(s.total_pagar)}</td>
+                        </tr>`;
+                    }
+                );
+                $("#tbody_cursos").html(rows_items);
                
             },
             error: function (xhr) {
@@ -334,186 +415,48 @@
             }
         });
     }
-    
-    
+
+    $(document).on('click', '.delete-record', function(e) {
+
+        e.preventDefault();
+        let recordId = $(this).data('id'); // Obtém o ID do registro
+
+        Swal.fire({
+            title: 'Você tem certeza?'
+            , text: "Esta ação não poderá ser desfeita!"
+            , icon: 'warning'
+            , showCancelButton: true
+            , confirmButtonColor: '#d33'
+            , cancelButtonColor: '#3085d6'
+            , confirmButtonText: 'Sim, excluir!'
+            , cancelButtonText: 'Cancelar'
+        , }).then((result) => {
+            if (result.isConfirmed) {
+                // Envia a solicitação AJAX para excluir o registro
+                $.ajax({
+                    url: `{{ route('contas-receber.destroy', ':id') }}`.replace(':id', recordId), 
+                    method: 'DELETE', 
+                    data: {
+                        _token: '{{ csrf_token() }}', // Inclui o token CSRF
+                    }
+                    , beforeSend: function() {
+                        // Você pode adicionar um loader aqui, se necessário
+                        progressBeforeSend();
+                    }
+                    , success: function(response) {
+                        Swal.close();
+                        // Exibe uma mensagem de sucesso
+                        showMessage('Sucesso!', 'Operação realizada com sucesso!', 'success');
+                        load();
+                    }
+                    , error: function(xhr) {
+                        Swal.close();
+                        showMessage('Erro!', xhr.responseJSON.message, 'error');
+                    }
+                , });
+            }
+        });
+    });
 
 </script>
 @endsection 
-
-{{-- @extends('layouts.escolas')
-
-@section('content')
-
-<!-- Content Header (Page header) -->
-<div class="content-header">
-    <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1 class="m-0 text-dark">Contas a Receber</h1>
-            </div><!-- /.col -->
-            <div class="col-sm-6">
-                <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="{{ route('financeiros.financeiro-novos-pagamentos') }}">Voltar</a></li>
-                    <li class="breadcrumb-item active">Contas Receber</li>
-                </ol>
-            </div><!-- /.col -->
-        </div><!-- /.row -->
-    </div><!-- /.container-fluid -->
-</div>
-<!-- /.content-header -->
-
-<!-- Main content -->
-<section class="content">
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12 col-md-12">
-                <form action="{{ route('financeiros.financeiro-contas-receber') }}" method="GET">
-                    @csrf
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="form-group col-12 col-md-2">
-                                    <label for="ano_lectivo_id" class="form-label">Ano Lectivo</label>
-                                    <select name="ano_lectivo_id" id="ano_lectivo_id" class="form-control select2">
-                                        <option value="">TODOS</option>
-                                        @if (count($listasanolectivo) != 0)
-                                        @foreach ($listasanolectivo as $item2)
-                                        <option value="{{ $item2->id }}" {{ $filtro['ano_lectivo_id'] == $item2->id ? 'selected' : '' }}>{{ $item2->ano }}</option>
-                                        @endforeach
-                                        @endif
-                                    </select>
-                                </div>
-    
-                                <div class="form-group col-12 col-md-3">
-                                    <label for="servico_id" class="form-label">Serviços</label>
-                                    <select name="servico_id" id="servico_id" class="form-control select2">
-                                        <option value="">TODOS</option>
-                                        @if (count($servicos) != 0)
-                                        @foreach ($servicos as $item)
-                                        <option value="{{ $item->id }}" {{ $filtro['servico_id'] == $item->id ? 'selected' : '' }}>{{ $item->servico }}</option>
-                                        @endforeach
-                                        @endif
-                                    </select>
-                                </div>
-    
-                                <div class="form-group col-12 col-md-3">
-                                    <label for="forma_pagamento_id" class="form-label">Forma Recebimento</label>
-                                    <select name="forma_pagamento_id" id="forma_pagamento_id" class="form-control select2">
-                                        <option value="">TODOS</option>
-                                        @if (count($formas_pagamento) != 0)
-                                        @foreach ($formas_pagamento as $item)
-                                        <option value="{{ $item->id }}" {{ $filtro['forma_pagamento_id'] == $item->id ? 'selected' : '' }}>{{ $item->descricao }}</option>
-                                        @endforeach
-                                        @endif
-                                    </select>
-                                </div>
-    
-                                <div class="form-group col-12 col-md-2">
-                                    <label for="data_inicio" class="form-label">Data Inicio</label>
-                                    <input type="date" id="data_inicio" placeholder="Data de Inicio da de Inicial" value="{{ $filtro['data_inicio'] ?? "" }}" name="data_inicio" class="form-control">
-                                </div>
-    
-                                <div class="form-group col-12 col-md-2">
-                                    <label for="data_final" class="form-label">Data Final</label>
-                                    <input type="date" id="data_final" placeholder="Data de Inicio da de FInal" value="{{ $filtro['data_final'] ?? "" }}" name="data_final" class="form-control">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-footer">
-                            <button class="btn btn-primary"><i class="fas fa-search"></i> Filtrar</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-12 col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <a href="{{ route('ficha-pagamentos-receber', [
-                            'type' => "receita", 
-                            'data_inicio' => $filtro['data_inicio'] ?? "", 
-                            'data_final' => $filtro['data_final'] ?? "",
-                            'forma_pagamento_id' => $filtro['forma_pagamento_id'] ?? "",
-                            'servico_id' => $filtro['servico_id'] ?? "",
-                            'ano_lectivo_id' => $filtro['ano_lectivo_id'] ?? ""
-                        ]) }}" class="btn btn-danger" target="_blink">Imprimir <i class="fas fa-file-pdf"></i></a>
-                    </div>
-                    @php $totalValorUnitario = 0; $totalQuantidade = 0; $totalValorGeral = 0; $totalValorMulta = 0; @endphp
-                    <div class="card-body table-responsive">
-                        @if ($pagamentos)
-                        <table id="carregarTabela" style="width: 100%" class="table table-bordered">
-                      
-                            <tbody>
-                                @foreach ($pagamentos as $item)
-                                <tr>
-                                    <td>{{ $item->pagamento->next_factura }}</td>
-                                    <td>{{ $item->servico->servico ?? "" }}</td>
-                                    <td>{{ $item->pagamento->model($item->pagamento->model, $item->pagamento->estudantes_id) }}</td>
-                                    <td class="text-right">{{ number_format($item->preco, 2, ',', '.')  }} </td>
-                                    <td class="text-right">{{ number_format($item->quantidade, 2, ',', '.') }} </td>
-                                    <td class="text-right">{{ number_format($item->desconto, 2, ',', '.') }} </td>
-                                    <td class="text-right">{{ number_format($item->multa, 2, ',', '.') }} </td>
-                                    <td class="text-right">{{ number_format( ($item->preco * $item->quantidade) - $item->desconto + $item->multa , 2, ',', '.') }} </td>
-                                    <td>{{  $item->pagamento->operador->nome ?? "" }}</td>
-                                    <td>{{ $item->date_att }}</td>
-                                    <td class="text-end" style="width: 200px">
-                                        @if (Auth::user()->can('delete: pagamento'))
-                                        <a href='{{ route('web.financeiro-limpar-pagamento', Crypt::encrypt($item->pagamento->id) ) }}' class="btn-danger btn mx-2">
-                                            <i class="fas fa-broom"></i>
-                                        </a>
-                                        @endif
-                                        <a href='{{ route('web.ficha-matricula', Crypt::encrypt($item->pagamento->ficha) ) }}' class="btn btn-primary mx-2">
-                                            <i class="fas fa-plus"></i>
-                                        </a>
-                                        <a href='{{ route('ficha-pagamento-propina', $item->pagamento->ficha) }}' target="_blink" class="btn btn-primary mx-2">
-                                            <i class="fas fa-print"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-
-                                @php
-                                $totalValorUnitario += $item->preco;
-                                $totalQuantidade += $item->quantidade;
-                                $totalValorGeral += $item->total_pagar;
-                                $totalValorMulta += $item->multa;
-                                @endphp
-
-                                @endforeach
-                            </tbody>
-                            <tfoot>
-                                <th class="text-right">-----</th>
-                                <th class="text-right">-----</th>
-                                <th class="text-right">-----</th>
-                                <th class="text-right">{{ number_format($totalValorUnitario, 2, ',', '.') }}</th>
-                                <th class="text-right">------</th>
-                                <th class="text-right">----------</th>
-                                <th class="text-right">{{ number_format($totalValorMulta, 2, ',', '.') }}</th>
-                                <th class="text-right">{{ number_format($totalValorGeral, 2, ',', '.') }}</th>
-                                <th class="text-right">----------</th>
-                                <th class="text-right">------</th>
-                                <th class="text-right">------</th>
-                                
-                            </tfoot>
-                        </table>
-                        @endif
-                    </div>
-                    <!-- /.card-body -->
-                </div>
-                <!-- /.card -->
-            </div>
-        </div>
-    </div>
-</section>
-<!-- /.content -->
-@endsection
-
-@section('scripts')
-<script>
-    const tabelas = [
-        "#carregarTabela"
-    , ];
-    tabelas.forEach(inicializarTabela);
-</script>
-@endsection --}}

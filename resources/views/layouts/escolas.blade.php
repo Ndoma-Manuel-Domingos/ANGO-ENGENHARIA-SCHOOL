@@ -213,6 +213,7 @@
                     <a class="block px-8 py-2 text-xs text-slate-500 hover:text-primary dark:hover:text-primary" href="#">Mapa de Pagamentos</a>
                     <a class="block px-8 py-2 text-xs text-slate-500 hover:text-primary dark:hover:text-primary" href="{{ route('home.contas-receber') }}">Entradas</a>
                     <a class="block px-8 py-2 text-xs text-slate-500 hover:text-primary dark:hover:text-primary" href="{{ route('home.contas-pagar') }}">Saídas</a>
+                    <a class="block px-8 py-2 text-xs text-slate-500 hover:text-primary dark:hover:text-primary" href="{{ route('home.gestao-dividas') }}">Gestão de dívidas</a>
                 </div>
             </div>
             
@@ -908,6 +909,28 @@
             `;
         }
         // FINAL - PAGINAÇÃO AJAX GLOBAL 
+        
+        function formatar_moeda(value) {
+            return value.toLocaleString('pt-AO', {
+                style: 'currency',
+                currency: 'AOA'
+            });
+        }
+        
+        function formatarData(isoString) {
+          const data = new Date(isoString);
+        
+          const horas = String(data.getUTCHours()).padStart(2, '0');
+          const minutos = String(data.getUTCMinutes()).padStart(2, '0');
+          const segundos = String(data.getUTCSeconds()).padStart(2, '0');
+        
+          const dia = String(data.getUTCDate()).padStart(2, '0');
+          const mes = String(data.getUTCMonth() + 1).padStart(2, '0');
+          const ano = data.getUTCFullYear();
+        
+          return `${horas}:${minutos}:${segundos} - ${dia}/${mes}/${ano}`;
+        }
+        
         
     </script>
     @yield('scripts')
