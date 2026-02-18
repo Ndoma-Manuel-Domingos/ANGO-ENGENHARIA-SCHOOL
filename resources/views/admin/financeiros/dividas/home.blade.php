@@ -114,7 +114,6 @@
         </div>
     </div>
     
-    
         
     {{-- Visualizações --}}
     <div id="modalView" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
@@ -126,22 +125,18 @@
          
             <div class="p-6 overflow-y-auto custom-scrollbar space-y-8 flex-1">
                 <section>
-                    <div class="flex items-center justify-between mb-4">
-                        <h4 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                            <span class="material-symbols-outlined text-primary text-lg">list_alt</span>Detalhes do Pagamento
-                        </h4>
-                    </div>
                     <div class="overflow-hidden border border-slate-100 dark:border-slate-800 rounded-xl">
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
                                     <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Codigo</th>
-                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Serviço</th>
-                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Quantidade</th>
-                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Preço Unitário</th>
+                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Meses</th>
+                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider" title="Data Inicio Pagamento">Data Inicio</th>
+                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider" title="Data Final Pagamento">Data Final</th>
+                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider" title="Valor Unitário">Preço</th>
                                     <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Multa</th>
-                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Desconto</th>
-                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Total</th>
+                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Estado</th>
+                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider text-right">Acções</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100 dark:divide-slate-800" id="tbody_cursos">
@@ -152,7 +147,11 @@
                 </section>
             </div>
             
-            <div id="footerData"></div>
+            <div class="p-6 border-t border-slate-100 dark:border-slate-800 flex justify-end shrink-0"> 
+                <button onclick="document.getElementById('modalView').classList.add('hidden')" class="mx-2 h-11 px-6 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+                    Fechar
+                </button>
+            </div>
             
         </div>
     </div>
@@ -242,9 +241,6 @@
                             </td>
                         `;
                     }
-                    
-                    let rota = "{{ route('web.sistuacao-financeiro', ':id') }}";
-                    rota = rota.replace(':id', s.estudante.id);
                 
                     rows += `
                         <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
@@ -280,7 +276,7 @@
                             </td>
                             <td class="px-6 py-5">
                                 <div class="flex justify-end gap-1">
-                                    <button class="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all" title="View" onclick="show(${s.id})">
+                                    <button class="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all" title="View" onclick="show(${s.estudante.id})">
                                         <span class="material-symbols-outlined text-xl">visibility</span>
                                     </button>
                                 </div>
@@ -305,6 +301,67 @@
     {   
     }
     
+    function exibir_cartoes(data) {
+                        
+        let rows_items = "";
+        data.cartoes.forEach(s => {
+        
+            let status = "";
+            
+            if (s.status == "Pago") {
+                status += `
+                    <button class="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all mudar-record" title="Definir como pago" data-id="${s.id}" data-status="Nao Pago">
+                        <span class="material-symbols-outlined text-xl">check_circle</span>
+                    </button>
+                `;
+            }
+            
+            if (s.status == "divida") {
+                status += `
+                    <button class="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all mudar-record" title="Definir como divída" data-id="${s.id}" data-status="Isento">
+                        <span class="material-symbols-outlined text-xl">warning</span>
+                    </button>
+                `;
+            }
+            
+            if (s.status == "Nao Pago") {
+                status += `
+                    <button class="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all mudar-record" title="Definir como não pago" data-id="${s.id}" data-status="Pago">
+                        <span class="material-symbols-outlined text-xl">cancel</span>
+                    </button>
+                `;
+            }
+            
+            if (s.status == "Isento") {
+                status += `
+                    <button class="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all mudar-record" title="Definir como isento" data-id="${s.id}" data-status="divida">
+                        <span class="material-symbols-outlined text-xl">verified</span>
+                    </button>
+                `;
+            }
+        
+            rows_items += `<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                    <td class="px-4 py-2 text-sm font-bold text-primary">${s.id}</td>
+                    <td class="px-4 py-2 text-sm font-medium">${descricao_mes(s.month_name)}</td>
+                    <td class="px-4 py-2 text-sm font-medium">${s.data_at}</td>
+                    <td class="px-4 py-2 text-sm font-medium">${s.data_exp}</td>
+                    <td class="px-4 py-2 text-sm font-medium">${formatar_moeda(s.preco_unitario)}</td>
+                    <td class="px-4 py-2 text-sm font-medium">${formatar_moeda(s.multa)}</td>
+                    <td class="px-4 py-2 text-sm font-medium">
+                        <span class="inline-flex px-2.5 py-1 ${s.status == "Pago" ? 'bg-green-500/10 text-green-600' : (s.status == "divida" ? 'bg-amber-500/10 text-amber-600' : (s.status == "Nao Pago" ? 'bg-red-500/10 text-red-600' : 'bg-blue-500/10 text-blue-600'))} text-[11px] font-bold rounded-full uppercase tracking-tight">${s.status}</span>
+                    </td>
+                    <td class="px-4 py-2">
+                        <div class="flex justify-end gap-1">
+                            ${status}
+                        </div>
+                    </td>
+                </tr>`;
+            }
+        );
+        $("#tbody_cursos").html(rows_items);
+    
+    }
+    
     function show(id)
     {
         $.ajax({
@@ -318,13 +375,10 @@
                 Swal.close();
                 modalView.classList.remove('hidden');
                 
-                let rota = "{{ route('ficha-pagamento-propina', ':id') }}";
-                rota = rota.replace(':id', data.ficha);
-                
                 let h = `
                     <div class="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800 shrink-0">
                         <div>
-                            <h3 class="text-xl font-bold text-slate-900 dark:text-white">${data.next_factura}</h3>
+                            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Situação Financeira</h3>
                         </div>
                         <button onclick="document.getElementById('modalView').classList.add('hidden')"
                             class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg transition-colors">
@@ -333,46 +387,16 @@
                     </div>
                     
                     <div class="p-6 overflow-y-auto custom-scrollbar space-y-2 flex-1">
-                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">${data.estudante.nome} ${data.estudante.sobre_nome}</h3>
-                        
-                        <p class="text-sm text-slate-500 font-medium">Total: ${formatar_moeda(data.total_incidencia + data.total_iva)}</p>
-                        <p class="text-sm text-slate-500 font-medium">Forma de Pagamento: ${data.tipo_pagamento}</p>
-                        <p class="text-sm text-slate-500 font-medium">Ano Lectivo: ${data.ano.ano}</p>
-                        <p class="text-sm text-slate-500 font-medium">Operador: ${data.operador.nome}</p>
-                        <p class="text-sm text-slate-500 font-medium">Data: ${formatarData(data.created_at)}</p>
-                        <p class="text-sm text-slate-500 font-medium">Observação: ${data.observacao ?? "Sem descrição"}</p>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white uppercase">${data.estudante.nome} ${data.estudante.sobre_nome} 
+                            <span class="text-gray-300"><span class="material-symbols-outlined text-xl">${data.bolseiro ? 'verified': 'person'}</span> ${data.bolseiro ? ' - Bolseiro': ' - Não Bolseiro'}</span>
+                        </h3>
+                        <p class="text-sm text-slate-500 font-medium">Extrato financeiro do estudante, meses pagos e não pagos.</p>
                     </div>
                 `;
                 
                 $("#headerData").html(h);
                 
-                let f = `
-                    <div class="p-6 border-t border-slate-100 dark:border-slate-800 flex justify-end shrink-0"> 
-                        <a href='${rota}' target="_blank" class="h-11 px-6 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
-                            Imprimir
-                        </a>
-                        <button onclick="document.getElementById('modalView').classList.add('hidden')" class="mx-2 h-11 px-6 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
-                            Fechar
-                        </button>
-                    </div>
-                `;
-                
-                $("#footerData").html(f);
-                
-                let rows_items = "";
-                data.items.forEach(s => {
-                    rows_items += `<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                            <td class="px-4 py-2 text-sm font-bold text-primary">${s.id}</td>
-                            <td class="px-4 py-2 text-sm font-medium">${s.servico.servico}</td>
-                            <td class="px-4 py-2 text-sm font-medium">${s.quantidade}</td>
-                            <td class="px-4 py-2 text-sm font-medium">${formatar_moeda(s.preco)}</td>
-                            <td class="px-4 py-2 text-sm font-medium">${formatar_moeda(s.multa)}</td>
-                            <td class="px-4 py-2 text-sm font-medium">${formatar_moeda(s.desconto_valor)}</td>
-                            <td class="px-4 py-2 text-sm font-medium">${formatar_moeda(s.total_pagar)}</td>
-                        </tr>`;
-                    }
-                );
-                $("#tbody_cursos").html(rows_items);
+                exibir_cartoes(data);
                
             },
             error: function (xhr) {
@@ -441,6 +465,51 @@
         });
     }
         
+    $(document).on('click', '.mudar-record', function(e) {
+
+        e.preventDefault();
+        let recordId = $(this).data('id');
+        let statusId = $(this).data('status');
+
+        Swal.fire({
+            title: 'Você tem certeza?'
+            , text: "Esta ação poderá ser desfeita!"
+            , icon: 'warning'
+            , showCancelButton: true
+            , confirmButtonColor: '#d33'
+            , cancelButtonColor: '#3085d6'
+            , confirmButtonText: `Sim, actualizar para ${statusId}!`
+            , cancelButtonText: 'Cancelar'
+        , }).then((result) => {
+            if (result.isConfirmed) {
+                // Envia a solicitação AJAX para excluir o registro
+                $.ajax({
+                    url: `{{ route('web.dividas-mudar-estado', [':id', ':status']) }}`.replace(':id', recordId).replace(':status', statusId), 
+                    method: 'GET', 
+                    data: {
+                        _token: '{{ csrf_token() }}', // Inclui o token CSRF
+                    }
+                    , beforeSend: function() {
+                        // Você pode adicionar um loader aqui, se necessário
+                        progressBeforeSend();
+                    }
+                    , success: function(data) {
+                        Swal.close();
+                        // Exibe uma mensagem de sucesso
+                        showMessage('Sucesso!', 'Operação realizada com sucesso!', 'success');
+                        exibir_cartoes(data);
+                        load(1);
+                    }
+                    , error: function(xhr) {
+                        Swal.close();
+                        showMessage('Erro!', xhr.responseJSON.message, 'error');
+                    }, 
+                });
+            }
+        });
+    });
+    
+    
     $("#btnExportPDF").click(() => exportData("pdf"));
     
 </script>

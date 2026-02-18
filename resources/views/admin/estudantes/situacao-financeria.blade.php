@@ -78,7 +78,6 @@
                                     </thead>
                                     <tbody>
                                         @if ($estudante->bolseiro($estudante->id))
-                                             
                                              {{-- CASO FOR BOLSEIROS --}}
                                             @foreach ($servicos as $item2)
                                                 @if ($estudante->bolseiro($estudante->id)->afectacao == "mensalidade")

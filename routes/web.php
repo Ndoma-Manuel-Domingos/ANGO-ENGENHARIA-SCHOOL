@@ -1049,6 +1049,8 @@ Route::group(["middleware" => "auth"], function () {
     
     Route::get('gestao-dividas', [GestaoDividaController::class, 'home'])->name('home.gestao-dividas');
     Route::resource('dividas', GestaoDividaController::class);
+    // Route::get('/estudantes/situacao-financeira/{id}', [EstudanteController::class, 'situacaFinanceiraEstudantes'])->name('web.sistuacao-financeiro');
+    Route::get('/dividas-mudar-estado/{id}/{status}', [GestaoDividaController::class, 'mudar_status'])->name('web.dividas-mudar-estado');
     Route::get('/dividas-export', [GestaoDividaController::class, 'export'])->name('web.dividas-export');
     
     
@@ -1303,7 +1305,6 @@ Route::group(["middleware" => "auth"], function () {
     Route::put('/estudantes/editar-bolseiro-estagio/{id}', [EstudanteController::class, 'estudantesEditarBolseiroEstagiarioUpdate'])->name('web.estudante-atribuir-estagiario-update');
 
 
-    Route::get('/estudantes/situacao-financeira/{id}', [EstudanteController::class, 'situacaFinanceiraEstudantes'])->name('web.sistuacao-financeiro');
     Route::get('/estudantes/listar-depositos/{id}', [EstudanteController::class, 'listarDepositosEstudante'])->name('shcools.listar-depositos-estudante');
     // Controller estuadante END
 
@@ -1326,6 +1327,7 @@ Route::group(["middleware" => "auth"], function () {
     Route::post('/salvar-cartoes/{id}/estudante-emissao', [CartaoEstudanteController::class, 'salvarCartao'])->name('web.salvar.emissao-cartao.estudante');
     Route::get('/gestao-cartoes', [CartaoEstudanteController::class, 'index'])->name('web.index.cartao');
     Route::post('/gestao-cartoes/gerar', [CartaoEstudanteController::class, 'create'])->name('web.index.create');
+    
     Route::get('/estudantes/activar-mes-pagar/{mes}/{est}', [CartaoEstudanteController::class, 'activarMesPagar'])->name('web.estudante-activar-mes-pagar');
     Route::get('/estudantes/activar-mes-nao-pagar/{mes}/{est}', [CartaoEstudanteController::class, 'activarMesNaoPagar'])->name('web.estudante-activar-mes-nao-pagar');
     Route::get('/estudantes/activar-mes-divida/{mes}/{est}', [CartaoEstudanteController::class, 'activarMesDivida'])->name('web.estudante-activar-mes-divida');

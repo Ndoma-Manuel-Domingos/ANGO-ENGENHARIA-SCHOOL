@@ -8,16 +8,23 @@ use App\Models\web\calendarios\Servico;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
 use App\Models\Shcool;
+use App\Models\web\calendarios\Matricula;
+use App\Models\web\calendarios\ServicoTurma;
 use App\Models\web\classes\AnoLectivoClasse;
 use App\Models\web\classes\Classe;
 use App\Models\web\cursos\AnoLectivoCurso;
 use App\Models\web\cursos\Curso;
 use App\Models\web\estudantes\CartaoEstudante;
+use App\Models\web\estudantes\Estudante;
+use App\Models\web\turmas\Bolseiro;
+use App\Models\web\turmas\EstudantesTurma;
+use App\Models\web\turmas\Turma;
 use App\Models\web\turnos\AnoLectivoTurno;
 use App\Models\web\turnos\Turno;
 use Illuminate\Support\Facades\File;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class GestaoDividaController extends Controller
 {
@@ -213,5 +220,128 @@ class GestaoDividaController extends Controller
             return $pdf->stream('lista-estudantes-devedores.pdf');
         }
     }
+
+    public function mudar_status($id, $status) 
+    {
+        try {
+        
+            $cartao = CartaoEstudante::findOrFail($id);
+                
+            $servicosPropina = Servico::where('servico', 'Propinas')
+                ->where('shcools_id', $this->escolarLogada())
+            ->first();
+            
+            $cartoes = CartaoEstudante::with(['servico'])->where('estudantes_id', $cartao->estudantes_id)
+                ->where('ano_lectivos_id', $this->anolectivoActivo())
+                ->where('mes_id', "M")
+                ->where('servicos_id', $servicosPropina->id)
+            ->get();
+            
+            $bolseiro = Bolseiro::with(['instituicao','bolsa', 'instituicao_bolsa', 'ano', 'periodo', 'estudante', 'escola'])
+                ->where('ano_lectivos_id', $this->anolectivoActivo())
+                ->where('status', 'activo')
+                ->where('estudante_id', $cartao->estudantes_id)
+            ->first();
+    
+            $estudantes = Estudante::findOrFail($cartao->estudantes_id);
+
+            DB::beginTransaction();
+
+            $cartao->status = $status;
+            $cartao->save();
+
+            DB::commit();
+            
+        } catch (\Exception $e) {
+            // Caso ocorra algum erro, você pode fazer rollback para desfazer as operações
+            DB::rollback();
+
+            Alert::warning('Informação', $e->getMessage());
+            return redirect()->back();
+            // Você também pode tratar o erro de alguma forma, como registrar logs ou retornar uma mensagem de erro para o usuário.
+        }
+        
+        return response()->json([
+            "message" => "Status atualizado com sucesso!",
+            "cartao" => $cartao,
+            "bolseiro" => $bolseiro,
+            "estudantes" => $estudantes,
+            "cartoes" => $cartoes
+        ]);
+    }
+    
+    public function show($id)
+    {
+        $user = auth()->user();
+
+        if (!$user->can('read: matricula') && !$user->can('read: estudante')) {
+            Alert::error('Acesso restrito', 'Você não possui permissão para esta operação, por favor, contacte o administrador!');
+            return redirect()->back();
+        }
+        
+        $estudantes = Estudante::findOrFail($id);
+
+        $servicosPropina = Servico::where('servico', 'Propinas')
+            ->where('shcools_id', $this->escolarLogada())
+        ->first();
+
+        $cartoes = CartaoEstudante::with(['servico'])->where('estudantes_id', $estudantes->id)
+            ->where('ano_lectivos_id', $this->anolectivoActivo())
+            ->where('mes_id', "M")
+            ->where('servicos_id', $servicosPropina->id)
+        ->get();
+
+        $matricula = Matricula::where("estudantes_id", $estudantes->id)
+            ->where("ano_lectivos_id", $this->anolectivoActivo())
+            ->whereIn("status_matricula", ["confirmado", "desistente", "inactivo", "falecido", "rejeitado"])
+            ->where("shcools_id", $this->escolarLogada())
+        ->first();
+
+        $estudanteTurma = EstudantesTurma::where('estudantes_id', $estudantes->id)
+            ->where('ano_lectivos_id', $this->anolectivoActivo())
+        ->first();
+
+        if (!$estudanteTurma) {
+            Alert::warning("Informação", "Infelizmente não pode acessar esta área porque estudante não esta inserido em nenhuma turma!");
+            return redirect()->back();
+        }
+        
+        // $servicos =(new App\Models\web\estudantes\CartaoEstudante())::with('servico')->where([
+        //     ['servicos_id', '=', $item->servicos_id],
+        //     ['estudantes_id', '=', $estudante->id],
+        //     ['ano_lectivos_id', '=', $ano->id],
+        // ])
+        // ->get();
+
+        $servicosTurma = ServicoTurma::where('turmas_id', $estudanteTurma->turmas_id)
+            ->where('model', 'turmas')
+            ->where('pagamento', 'mensal')
+            ->where('ano_lectivos_id', $this->anolectivoActivo())
+            ->with(['servico'])
+        ->get();
+
+
+        $turma = Turma::findOrFail($estudanteTurma->turmas_id);
+        
+        $bolseiro = Bolseiro::with(['instituicao','bolsa', 'instituicao_bolsa', 'ano', 'periodo', 'estudante', 'escola'])
+            ->where('ano_lectivos_id', $this->anolectivoActivo())
+            ->where('status', 'activo')
+            ->where('estudante_id', $estudantes->id)
+        ->first();
+
+        return response()->json([
+            "estudante" => $estudantes,
+            "matricula" => $matricula,
+            "bolseiro" => $bolseiro,
+            "cartoes" => $cartoes,
+            "ano" => AnoLectivo::findOrFail($this->anolectivoActivo()),
+            "turma" => $turma,
+            "servicosTurma" => $servicosTurma,
+            "servicosPropina" => $servicosPropina,
+        ]);
+
+        return view('admin.estudantes.situacao-financeria', $headers);
+    }
+
 
 }

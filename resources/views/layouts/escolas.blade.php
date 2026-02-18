@@ -11,7 +11,7 @@
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Interactive Sidebar Management Dashboard</title>
+    <title>{{ ENV('APP_NAME') }} | {{ $titulo }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -929,6 +929,47 @@
           const ano = data.getUTCFullYear();
         
           return `${horas}:${minutos}:${segundos} - ${dia}/${mes}/${ano}`;
+        }
+        
+        
+        function descricao_mes($string)
+        {
+            if ($string == "Nov") {
+                return "Novembro";
+            }
+            if ($string == "Dec") {
+                return "Dezembro";
+            }
+            if ($string == "Jan") {
+                return "Janeiro";
+            }
+            if ($string == "Feb") {
+                return "Fevereiro";
+            }
+            if ($string == "Mar") {
+                return "Março";
+            }
+            if ($string == "Apr") {
+                return "Abril";
+            }
+            if ($string == "May") {
+                return "Maio";
+            }
+            if ($string == "Jun") {
+                return "Junho";
+            }
+            if ($string == "Jul") {
+                return "Julho";
+            }
+            if ($string == "Aug") {
+                return "Agosto";
+            }
+            if ($string == "Sep") {
+                return "Setembro";
+            }
+            if ($string == "Oct") {
+                return "Outumbro";
+            }
         }
         
         

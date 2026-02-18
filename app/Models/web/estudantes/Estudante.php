@@ -252,9 +252,9 @@ class Estudante extends Model
         }
         
         $bolseiro = Bolseiro::with(['instituicao','bolsa', 'instituicao_bolsa', 'ano', 'periodo', 'estudante', 'escola'])
-        ->where('ano_lectivos_id', $ano)
-        ->where('status', 'activo')
-        ->where('estudante_id', $estudante->id)
+            ->where('ano_lectivos_id', $ano)
+            ->where('status', 'activo')
+            ->where('estudante_id', $estudante->id)
         ->first();
       
         return $bolseiro;
