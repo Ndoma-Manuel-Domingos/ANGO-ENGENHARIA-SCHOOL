@@ -214,6 +214,7 @@
                     <a class="block px-8 py-2 text-xs text-slate-500 hover:text-primary dark:hover:text-primary" href="{{ route('home.contas-receber') }}">Entradas</a>
                     <a class="block px-8 py-2 text-xs text-slate-500 hover:text-primary dark:hover:text-primary" href="{{ route('home.contas-pagar') }}">Saídas</a>
                     <a class="block px-8 py-2 text-xs text-slate-500 hover:text-primary dark:hover:text-primary" href="{{ route('home.gestao-dividas') }}">Gestão de dívidas</a>
+                    <a class="block px-8 py-2 text-xs text-slate-500 hover:text-primary dark:hover:text-primary" href="{{ route('home.isencoes') }}">Isenção de Serviços</a>
                 </div>
             </div>
             
@@ -931,7 +932,6 @@
           return `${horas}:${minutos}:${segundos} - ${dia}/${mes}/${ano}`;
         }
         
-        
         function descricao_mes($string)
         {
             if ($string == "Nov") {
@@ -971,7 +971,6 @@
                 return "Outumbro";
             }
         }
-        
         
     </script>
     @yield('scripts')

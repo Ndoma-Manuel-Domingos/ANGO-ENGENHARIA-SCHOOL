@@ -163,35 +163,4 @@ class CartaoEstudanteController extends Controller
         return $pdf->stream('cartao.pdf');
     }
 
-    // extrato mes a pagar activa
-
-    public function activarMesPagar($mes, $est)
-    {
-        $estudante = Estudante::findOrFail($est);
-        $mes = CartaoEstudante::with(["controle_periodio", "estudante", "servico", "ano"])->findOrFail($mes);
-        $mes->status = "Nao Pago"; //pagar
-        $mes->update();
-
-        return redirect()->route('web.sistuacao-financeiro', Crypt::encrypt($estudante->id));
-    }
-
-    public function activarMesNaoPagar($mes, $est)
-    {
-        $estudante = Estudante::findOrFail($est);
-        $mes = CartaoEstudante::with(["controle_periodio", "estudante", "servico", "ano"])->findOrFail($mes);
-        $mes->status = "Pago";
-        $mes->update();
-
-        return redirect()->route('web.sistuacao-financeiro', Crypt::encrypt($estudante->id));
-    }
-
-    public function activarMesDivida($mes, $est)
-    {
-        $estudante = Estudante::findOrFail($est);
-        $mes = CartaoEstudante::with(["controle_periodio", "estudante", "servico", "ano"])->findOrFail($mes);
-        $mes->status = "divida";
-        $mes->update();
-
-        return redirect()->route('web.sistuacao-financeiro', Crypt::encrypt($estudante->id));
-    }
 }

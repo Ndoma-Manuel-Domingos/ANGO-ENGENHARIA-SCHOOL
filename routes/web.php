@@ -99,6 +99,7 @@ use App\Http\Controllers\{
     ContaReceberController,
     GestaoDividaController,
     InstituicaoEstagioController,
+    IsencaoServicoController,
     LaboratorioController,
     LogisticaController,
     MercadoriaController,
@@ -1049,27 +1050,20 @@ Route::group(["middleware" => "auth"], function () {
     
     Route::get('gestao-dividas', [GestaoDividaController::class, 'home'])->name('home.gestao-dividas');
     Route::resource('dividas', GestaoDividaController::class);
-    // Route::get('/estudantes/situacao-financeira/{id}', [EstudanteController::class, 'situacaFinanceiraEstudantes'])->name('web.sistuacao-financeiro');
     Route::get('/dividas-mudar-estado/{id}/{status}', [GestaoDividaController::class, 'mudar_status'])->name('web.dividas-mudar-estado');
     Route::get('/dividas-export', [GestaoDividaController::class, 'export'])->name('web.dividas-export');
     
+    Route::get('isencoes-home', [IsencaoServicoController::class, 'home'])->name('home.isencoes');
+    Route::resource('isencoes', IsencaoServicoController::class);
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    // Route::get('/financeiro/isentar/{id}', [FinanceiroController::class, 'isentarPagamento'])->name('web.financeiro-isentar-pagamento');
+    // Route::put('/financeiro/isentar-propina/{id}', [FinanceiroController::class, 'isentarPropina'])->name('web.financeiro-isentar-propina');
+    // Route::put('/financeiro/remover-isentar-propina/{id}', [FinanceiroController::class, 'removerIsentarPropina'])->name('web.financeiro-remover-isentar-propina');
+    // Route::put('/financeiro/isentar-multa/{id}', [FinanceiroController::class, 'isentarMulta'])->name('web.financeiro-isentar-multa');
+    // Route::put('/financeiro/remover-isentar-multa/{id}', [FinanceiroController::class, 'removerIsentarMulta'])->name('web.financeiro-remover-isentar-multa');
+    // Route::put('/financeiro/editar-multa/{id}', [FinanceiroController::class, 'editarMulta'])->name('web.financeiro-editar-multa');
+
     
     
     
@@ -1327,10 +1321,6 @@ Route::group(["middleware" => "auth"], function () {
     Route::post('/salvar-cartoes/{id}/estudante-emissao', [CartaoEstudanteController::class, 'salvarCartao'])->name('web.salvar.emissao-cartao.estudante');
     Route::get('/gestao-cartoes', [CartaoEstudanteController::class, 'index'])->name('web.index.cartao');
     Route::post('/gestao-cartoes/gerar', [CartaoEstudanteController::class, 'create'])->name('web.index.create');
-    
-    Route::get('/estudantes/activar-mes-pagar/{mes}/{est}', [CartaoEstudanteController::class, 'activarMesPagar'])->name('web.estudante-activar-mes-pagar');
-    Route::get('/estudantes/activar-mes-nao-pagar/{mes}/{est}', [CartaoEstudanteController::class, 'activarMesNaoPagar'])->name('web.estudante-activar-mes-nao-pagar');
-    Route::get('/estudantes/activar-mes-divida/{mes}/{est}', [CartaoEstudanteController::class, 'activarMesDivida'])->name('web.estudante-activar-mes-divida');
 
     Route::prefix('backup')->group(function () {
         Route::get('/backups/exportar', [BackupController::class, 'exportar'])->name('backups-exportar');
@@ -1442,12 +1432,6 @@ Route::group(["middleware" => "auth"], function () {
     Route::post('/financeiro/pagamento-servico', [FinanceiroController::class, 'escolaPagamentoServicoCreate'])->name('web.escola-pagamento-servico-create');
 
     Route::get('/financeiro/outras-gerais', [FinanceiroController::class, 'outrasBuscas'])->name('web.financeiro-outras-buascas');
-    Route::get('/financeiro/isentar/{id}', [FinanceiroController::class, 'isentarPagamento'])->name('web.financeiro-isentar-pagamento');
-    Route::put('/financeiro/isentar-propina/{id}', [FinanceiroController::class, 'isentarPropina'])->name('web.financeiro-isentar-propina');
-    Route::put('/financeiro/remover-isentar-propina/{id}', [FinanceiroController::class, 'removerIsentarPropina'])->name('web.financeiro-remover-isentar-propina');
-    Route::put('/financeiro/isentar-multa/{id}', [FinanceiroController::class, 'isentarMulta'])->name('web.financeiro-isentar-multa');
-    Route::put('/financeiro/remover-isentar-multa/{id}', [FinanceiroController::class, 'removerIsentarMulta'])->name('web.financeiro-remover-isentar-multa');
-    Route::put('/financeiro/editar-multa/{id}', [FinanceiroController::class, 'editarMulta'])->name('web.financeiro-editar-multa');
 
     // WEB APP FUNCIONARIOS
 

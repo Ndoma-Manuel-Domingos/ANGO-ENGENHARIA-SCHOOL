@@ -224,8 +224,13 @@ class GestaoDividaController extends Controller
     public function mudar_status($id, $status) 
     {
         try {
-        
+            
+            DB::beginTransaction();
+            
             $cartao = CartaoEstudante::findOrFail($id);
+            
+            $cartao->status = $status;
+            $cartao->save();
                 
             $servicosPropina = Servico::where('servico', 'Propinas')
                 ->where('shcools_id', $this->escolarLogada())
@@ -244,11 +249,6 @@ class GestaoDividaController extends Controller
             ->first();
     
             $estudantes = Estudante::findOrFail($cartao->estudantes_id);
-
-            DB::beginTransaction();
-
-            $cartao->status = $status;
-            $cartao->save();
 
             DB::commit();
             
@@ -291,12 +291,6 @@ class GestaoDividaController extends Controller
             ->where('servicos_id', $servicosPropina->id)
         ->get();
 
-        $matricula = Matricula::where("estudantes_id", $estudantes->id)
-            ->where("ano_lectivos_id", $this->anolectivoActivo())
-            ->whereIn("status_matricula", ["confirmado", "desistente", "inactivo", "falecido", "rejeitado"])
-            ->where("shcools_id", $this->escolarLogada())
-        ->first();
-
         $estudanteTurma = EstudantesTurma::where('estudantes_id', $estudantes->id)
             ->where('ano_lectivos_id', $this->anolectivoActivo())
         ->first();
@@ -305,21 +299,6 @@ class GestaoDividaController extends Controller
             Alert::warning("Informação", "Infelizmente não pode acessar esta área porque estudante não esta inserido em nenhuma turma!");
             return redirect()->back();
         }
-        
-        // $servicos =(new App\Models\web\estudantes\CartaoEstudante())::with('servico')->where([
-        //     ['servicos_id', '=', $item->servicos_id],
-        //     ['estudantes_id', '=', $estudante->id],
-        //     ['ano_lectivos_id', '=', $ano->id],
-        // ])
-        // ->get();
-
-        $servicosTurma = ServicoTurma::where('turmas_id', $estudanteTurma->turmas_id)
-            ->where('model', 'turmas')
-            ->where('pagamento', 'mensal')
-            ->where('ano_lectivos_id', $this->anolectivoActivo())
-            ->with(['servico'])
-        ->get();
-
 
         $turma = Turma::findOrFail($estudanteTurma->turmas_id);
         
@@ -331,16 +310,13 @@ class GestaoDividaController extends Controller
 
         return response()->json([
             "estudante" => $estudantes,
-            "matricula" => $matricula,
             "bolseiro" => $bolseiro,
             "cartoes" => $cartoes,
             "ano" => AnoLectivo::findOrFail($this->anolectivoActivo()),
             "turma" => $turma,
-            "servicosTurma" => $servicosTurma,
             "servicosPropina" => $servicosPropina,
         ]);
 
-        return view('admin.estudantes.situacao-financeria', $headers);
     }
 
 

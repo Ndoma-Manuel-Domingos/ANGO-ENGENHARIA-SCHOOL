@@ -268,21 +268,15 @@ class BolseiroController extends Controller
                         }
                     }
                 } else {
-
                     if ($request->afectacao == "mensalidade") {
-                    
                         foreach ($estudanteTurma as $servico) {
-                        
                             if ($servico->pagamento == 'mensal') {
-
                                 if ($trimestre->trimestre == "Iª Trimestre") {
-                                
                                     $cartao = CartaoEstudante::where('trimestral', "1º Trimestre")
                                         ->where('ano_lectivos_id', $request->ano_lectivo_id)
                                         ->where('servicos_id', $servico->servicos_id)
                                         ->where('estudantes_id', $request->estudante_id)
                                     ->get();
-                                    
                                 }
                                 
                                 if ($trimestre->trimestre == "IIª Trimestre") {
@@ -338,11 +332,9 @@ class BolseiroController extends Controller
                                 }
                             }
                         }
-                        
                     }
 
                     if ($request->afectacao == "global") {
-
                         if ($trimestre->trimestre == "Iª Trimestre") {
                         
                             $cartao = CartaoEstudante::whereIn('trimestral', ["1º Trimestre", "Normal"])

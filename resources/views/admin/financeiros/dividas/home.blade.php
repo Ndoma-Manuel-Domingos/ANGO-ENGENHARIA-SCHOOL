@@ -27,7 +27,6 @@
         </div>
     </div>
        
-       
     <div class="bg-white dark:bg-sidebar-dark rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
         <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col lg:flex-row gap-4 lg:items-center justify-between">
             <div class="flex flex-wrap gap-3">
@@ -113,13 +112,12 @@
             <div id="pagination"></div>
         </div>
     </div>
-    
         
     {{-- Visualizações --}}
     <div id="modalView" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
         
-        <div class="relative bg-white dark:bg-sidebar-dark w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">
+        <div class="relative bg-white dark:bg-sidebar-dark w-full max-w-7xl rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">
             
             <div id="headerData"></div>
          
@@ -128,15 +126,8 @@
                     <div class="overflow-hidden border border-slate-100 dark:border-slate-800 rounded-xl">
                         <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
-                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Codigo</th>
-                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Meses</th>
-                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider" title="Data Inicio Pagamento">Data Inicio</th>
-                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider" title="Data Final Pagamento">Data Final</th>
-                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider" title="Valor Unitário">Preço</th>
-                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Multa</th>
-                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Estado</th>
-                                    <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider text-right">Acções</th>
+                                <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800" id="idTH">
+                                    
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100 dark:divide-slate-800" id="tbody_cursos">
@@ -155,18 +146,17 @@
             
         </div>
     </div>
-    
 </div>
 @endsection
 
 @section('scripts')
 <script>
-
     const modalView = document.getElementById('modalView');
 
     $(document).ready(function(){
         load();
     });
+    
     $("#designacao_geral").on('input', function () {
         load(1);
     });
@@ -304,21 +294,84 @@
     function exibir_cartoes(data) {
                         
         let rows_items = "";
-        data.cartoes.forEach(s => {
+        let idHT = "";
         
+        if(data.bolseiro) {
+            idHT += `
+                <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Meses</th>
+                <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider" title="Data Final Pagamento">Final Pagamento</th>
+                <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider" title="Valor Unitário">Preço</th>
+                <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Multa</th>
+                <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Estado</th>
+                <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Desconto</th>
+                <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Valor_Pagar</th>
+                <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Periodo_1</th>
+                <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Periodo_2</th>
+                <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Pag_Feito</th>
+                <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider text-right">Acções</th>
+            `;
+        }else {
+            idHT += `
+                <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Meses</th>
+                <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider" title="Data Final Pagamento">Data Final</th>
+                <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider" title="Valor Unitário">Preço</th>
+                <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Multa</th>
+                <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Estado</th>
+                <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider text-right">Acções</th>
+            `;
+        }
+        
+        $("#idTH").html(idHT);
+        
+        data.cartoes.forEach(s => {
+           
             let status = "";
+            let idDT = "";
+            
+            if(data.bolseiro) {
+
+                if(data.bolseiro.afectacao == "mensalidade") {
+                    idDT += `
+                        <td class="px-4 py-2 text-sm font-medium">${formatar_moeda((s.preco_unitario - (s.preco_unitario * (data.bolseiro.instituicao_bolsa.desconto) / 100)))}</td>
+                        <td class="px-4 py-2 text-sm font-medium">${formatar_moeda((s.preco_unitario - (s.preco_unitario - (s.preco_unitario * (data.bolseiro.instituicao_bolsa.desconto) / 100) )))}</td>
+                    `;
+                }else {
+                    idDT += `
+                        <td class="px-4 py-2 text-sm font-medium">${formatar_moeda((s.preco_unitario - (s.preco_unitario * (data.bolseiro.instituicao_bolsa.desconto) / 100)))}</td>
+                        <td class="px-4 py-2 text-sm font-medium">${formatar_moeda((s.preco_unitario - (s.preco_unitario - (s.preco_unitario * (data.bolseiro.instituicao_bolsa.desconto) / 100) )))}</td>
+                    `;
+                }
+                
+                idDT += `
+                    <td class="px-4 py-2 text-sm font-medium">${s.trimestral}</td>
+                    <td class="px-4 py-2 text-sm font-medium">${s.semestral}</td>
+                    <td class="px-4 py-2 text-sm font-medium">${s.status_2}</td>
+                `;
+            }
             
             if (s.status == "Pago") {
                 status += `
-                    <button class="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all mudar-record" title="Definir como pago" data-id="${s.id}" data-status="Nao Pago">
+                    <button class="p-2 text-red-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all mudar-record" title="Definir como não pago" data-id="${s.id}" data-status="Nao Pago">
                         <span class="material-symbols-outlined text-xl">check_circle</span>
+                    </button>
+                    <button class="p-2 text-blue-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all mudar-record" title="Definir como isento" data-id="${s.id}" data-status="Isento">
+                        <span class="material-symbols-outlined text-xl">warning</span>
+                    </button>
+                    <button class="p-2 text-amber-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all mudar-record" title="Definir como divida" data-id="${s.id}" data-status="divida">
+                        <span class="material-symbols-outlined text-xl">verified</span>
                     </button>
                 `;
             }
             
             if (s.status == "divida") {
                 status += `
-                    <button class="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all mudar-record" title="Definir como divída" data-id="${s.id}" data-status="Isento">
+                    <button class="p-2 text-red-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all mudar-record" title="Definir como não pago" data-id="${s.id}" data-status="Nao Pago">
+                        <span class="material-symbols-outlined text-xl">check_circle</span>
+                    </button>
+                    <button class="p-2 text-green-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all mudar-record" title="Definir como pago" data-id="${s.id}" data-status="Pago">
+                        <span class="material-symbols-outlined text-xl">cancel</span>
+                    </button>
+                    <button class="p-2 text-blue-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all mudar-record" title="Definir como isento" data-id="${s.id}" data-status="Isento">
                         <span class="material-symbols-outlined text-xl">warning</span>
                     </button>
                 `;
@@ -326,36 +379,48 @@
             
             if (s.status == "Nao Pago") {
                 status += `
-                    <button class="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all mudar-record" title="Definir como não pago" data-id="${s.id}" data-status="Pago">
+                    <button class="p-2 text-green-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all mudar-record" title="Definir como pago" data-id="${s.id}" data-status="Pago">
                         <span class="material-symbols-outlined text-xl">cancel</span>
+                    </button>
+                    <button class="p-2 text-blue-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all mudar-record" title="Definir como isento" data-id="${s.id}" data-status="Isento">
+                        <span class="material-symbols-outlined text-xl">warning</span>
+                    </button>
+                    <button class="p-2 text-amber-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all mudar-record" title="Definir como divida" data-id="${s.id}" data-status="divida">
+                        <span class="material-symbols-outlined text-xl">verified</span>
                     </button>
                 `;
             }
             
             if (s.status == "Isento") {
                 status += `
-                    <button class="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all mudar-record" title="Definir como isento" data-id="${s.id}" data-status="divida">
+                    <button class="p-2 text-amber-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all mudar-record" title="Definir como divída" data-id="${s.id}" data-status="divida">
                         <span class="material-symbols-outlined text-xl">verified</span>
+                    </button>
+                    <button class="p-2 text-green-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all mudar-record" title="Definir como pago" data-id="${s.id}" data-status="Pago">
+                        <span class="material-symbols-outlined text-xl">cancel</span>
+                    </button>
+                    <button class="p-2 text-red-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all mudar-record" title="Definir como não pago" data-id="${s.id}" data-status="Nao Pago">
+                        <span class="material-symbols-outlined text-xl">check_circle</span>
                     </button>
                 `;
             }
         
             rows_items += `<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                    <td class="px-4 py-2 text-sm font-bold text-primary">${s.id}</td>
-                    <td class="px-4 py-2 text-sm font-medium">${descricao_mes(s.month_name)}</td>
-                    <td class="px-4 py-2 text-sm font-medium">${s.data_at}</td>
-                    <td class="px-4 py-2 text-sm font-medium">${s.data_exp}</td>
-                    <td class="px-4 py-2 text-sm font-medium">${formatar_moeda(s.preco_unitario)}</td>
-                    <td class="px-4 py-2 text-sm font-medium">${formatar_moeda(s.multa)}</td>
-                    <td class="px-4 py-2 text-sm font-medium">
-                        <span class="inline-flex px-2.5 py-1 ${s.status == "Pago" ? 'bg-green-500/10 text-green-600' : (s.status == "divida" ? 'bg-amber-500/10 text-amber-600' : (s.status == "Nao Pago" ? 'bg-red-500/10 text-red-600' : 'bg-blue-500/10 text-blue-600'))} text-[11px] font-bold rounded-full uppercase tracking-tight">${s.status}</span>
-                    </td>
-                    <td class="px-4 py-2">
-                        <div class="flex justify-end gap-1">
-                            ${status}
-                        </div>
-                    </td>
-                </tr>`;
+                <td class="px-4 py-2 text-sm font-medium">${descricao_mes(s.month_name)}</td>
+                <td class="px-4 py-2 text-sm font-medium">${s.data_exp}</td>
+                <td class="px-4 py-2 text-sm font-medium">${formatar_moeda(s.preco_unitario)}</td>
+                <td class="px-4 py-2 text-sm font-medium">${formatar_moeda(s.multa)}</td>
+                <td class="px-4 py-2 text-sm font-medium">
+                    <span class="inline-flex px-2.5 py-1 ${s.status == "Pago" ? 'bg-green-500/10 text-green-600' : (s.status == "divida" ? 'bg-amber-500/10 text-amber-600' : (s.status == "Nao Pago" ? 'bg-red-500/10 text-red-600' : 'bg-blue-500/10 text-blue-600'))} text-[11px] font-bold rounded-full uppercase tracking-tight">${s.status}</span>
+                </td>
+                ${idDT}
+                <td class="px-4 py-2">
+                    <div class="flex justify-end gap-1">
+                        ${status}
+                    </div>
+                </td>
+            </tr>`;
+            
             }
         );
         $("#tbody_cursos").html(rows_items);
@@ -495,10 +560,12 @@
                     }
                     , success: function(data) {
                         Swal.close();
+                         
+                        $("#tbody_cursos").empty();
+                        exibir_cartoes(data);
                         // Exibe uma mensagem de sucesso
                         showMessage('Sucesso!', 'Operação realizada com sucesso!', 'success');
-                        exibir_cartoes(data);
-                        load(1);
+                       
                     }
                     , error: function(xhr) {
                         Swal.close();
@@ -509,282 +576,7 @@
         });
     });
     
-    
     $("#btnExportPDF").click(() => exportData("pdf"));
     
 </script>
 @endsection 
-
-
-
-
-{{-- @extends('layouts.escolas')
-
-@section('content')
-<!-- Content Header (Page header) -->
-<div class="content-header">
-    <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1 class="m-0 text-dark">Painel Financeiro Gestão de dívidas</h1>
-            </div><!-- /.col -->
-            <div class="col-sm-6">
-                <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="{{ route('financeiros.financeiro-novos-pagamentos') }}">Voltar</a></li>
-                    <li class="breadcrumb-item active">Divídas</li>
-                </ol>
-            </div><!-- /.col -->
-        </div><!-- /.row -->
-    </div><!-- /.container-fluid -->
-</div>
-<!-- /.content-header -->
-
-<!-- Main content -->
-<div class="content">
-    <div class="container-fluid">
-        <!-- Small boxes (Stat box) -->
-
-        <div class="row">
-            <div class="col-12 col-md-12">
-                <div class="callout callout-info">
-                    <h5><i class="fas fa-info"></i> Painel financeiro para gestão de dívidas, imprimir lista de
-                        estudantes devedores por turma, individual e geral.</h5>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-12 col-md-12">
-                <form action="{{ route('financeiros.financeiro-gestao-dividas') }}" method="GET">
-                    @csrf
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="row">
-                                
-                                <div class="form-group col-12 col-md-4">
-                                    <label for="input_estudante" class="form-label">Pesquisar por Estudante</label>
-                                    <input type="text" name="input_estudante" value="{{ old('inpu_estudante') ?? $requests['input_estudante'] }}" placeholder="Informe o número do bilheite ou cedula" class="form-control input_estudante" id="input_estudante">
-                                </div>
-                            
-                                <div class="form-group col-12 col-md-2">
-                                    <label for="ano_lectivos_id" class="form-label">Anos Lectivos</label>
-                                    <select name="ano_lectivos_id" class="form-control ano_lectivos_id select2" id="ano_lectivos_id">
-                                        <option value="">Todos</option>
-                                        @foreach ($anos_lectivos as $item)
-                                            <option value="{{ $item->id }}" {{ $requests['ano_lectivos_id'] == $item->id ? 'selected' : '' }}>{{ $item->ano }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-            
-                                <div class="form-group col-12 col-md-2">
-                                    <label for="servico" class="form-label">Serviços</label>
-                                    <select name="servico" id="servico" class="form-control servico select2">
-                                        <option value="">Todos</option>
-                                        @if (count($servicos) != 0)
-                                        @foreach ($servicos as $item)
-                                        <option value="{{ $item->id }}" {{ $requests['servico'] == $item->id ? 'selected' : '' }}>{{ $item->servico }}</option>
-                                        @endforeach
-                                        @endif
-                                    </select>
-                                </div>
-                                
-                                @php
-                                    // Verifica se o campo 'mes' existe e se é um array
-                                    $mesesSelecionados = isset($requests['mes']) && is_array($requests['mes']) ? $requests['mes'] : [];
-                                @endphp
-                                
-                               
-                                <div class="form-group col-12 col-md-4">
-                                    <label for="mes" class="form-label">Meses </label>
-                                    <select name="mes[]" id="mes" multiple="multiple" class="form-control mes select2">
-                                        <option value="">Todos</option>
-                                        <option value="Jan" {{ in_array("Jan", $mesesSelecionados) ? 'selected' : '' }}>Janeiro</option>
-                                        <option value="Feb" {{ in_array("Feb", $mesesSelecionados) ? 'selected' : '' }}>Fevereiro</option>
-                                        <option value="Mar" {{ in_array("Mar", $mesesSelecionados) ? 'selected' : '' }}>Março</option>
-                                        <option value="Apr" {{ in_array("Apr", $mesesSelecionados) ? 'selected' : '' }}>Abril</option>
-                                        <option value="May" {{ in_array("May", $mesesSelecionados) ? 'selected' : '' }}>Maio</option>
-                                        <option value="Jun" {{ in_array("Jun", $mesesSelecionados) ? 'selected' : '' }}>Junho</option>
-                                        <option value="Jul" {{ in_array("Jul", $mesesSelecionados) ? 'selected' : '' }}>Julho</option>
-                                        <option value="Aug" {{ in_array("Aug", $mesesSelecionados) ? 'selected' : '' }}>Agosto</option>
-                                        <option value="Sep" {{ in_array("Sep", $mesesSelecionados) ? 'selected' : '' }}>Setembro</option>
-                                        <option value="Oct" {{ in_array("Oct", $mesesSelecionados) ? 'selected' : '' }}>Outrobro</option>
-                                        <option value="Nov" {{ in_array("Nov", $mesesSelecionados) ? 'selected' : '' }}>Novembro</option>
-                                        <option value="Dec" {{ in_array("Dec", $mesesSelecionados) ? 'selected' : '' }}>Deszembro</option>
-                                    </select>
-                                </div>
-            
-                                <div class="form-group col-12 col-md-2">
-                                    <label for="condicao" class="form-label">Estado</label>
-                                    <select name="condicao" id="condicao" class="form-control condicao select2">
-                                        <option value="">Todos</option>
-                                        <option value="Nao Pago" {{ $requests['condicao'] == "Nao Pago" ? 'selected' : '' }}>Não Pagos</option>
-                                        <option value="Pago" {{ $requests['condicao'] == "Pago" ? 'selected' : '' }}>Pagos</option>
-                                        <option value="divida" {{ $requests['condicao'] == "divida" ? 'selected' : '' }}>Divida</option>
-                                    </select>
-                                </div>
-                                
-                                
-                                <div class="form-group col-12 col-md-2">
-                                    <label for="cursos_id" class="form-label">Cursos</label>
-                                    <select name="cursos_id" id="cursos_id" class="form-control cursos_id select2">
-                                        <option value="">Todos</option>
-                                        @foreach ($cursos as $item)
-                                        <option value="{{ $item->curso->id }}" {{ $requests['cursos_id'] == $item->curso->id ? 'selected' : '' }}>{{ $item->curso->curso }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group col-12 col-md-2">
-                                    <label for="classes_id" class="form-label">Classes</label>
-                                    <select name="classes_id" id="classes_id" class="form-control classes_id select2">
-                                        <option value="">Todos</option>
-                                        @foreach ($classes as $item)
-                                        <option value="{{ $item->classe->id }}" {{ $requests['classes_id'] == $item->classe->id ? 'selected' : '' }}>{{ $item->classe->classes }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group col-12 col-md-2">
-                                    <label for="turnos_id" class="form-label">Turnos</label>
-                                    <select name="turnos_id" id="turnos_id" class="form-control turnos_id select2">
-                                        <option value="">Todos</option>
-                                        @foreach ($turnos as $item)
-                                        <option value="{{ $item->turno->id }}" {{ $requests['turnos_id'] == $item->turno->id ? 'selected' : '' }}>{{ $item->turno->turno }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                
-                                
-                            </div>
-                        </div>
-                        <div class="card-footer">
-                            <button type="submit" class="btn btn-primary imprimir_lista"><i class="fas fa-filter"></i> Filtra</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-        
-        @if ($cartoes)
-            <div class="row">
-                <div class="col-12 col-md-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">Listagem estudantes com Extratos</h3>
-                            <a href="{{ route('estudantes-devedores-imprmir', ['input_estudante' => $requests['input_estudante'] ?? "", 'ano_lectivos_id' => $requests['ano_lectivos_id'] ?? "", 'servico' => $requests['servico'] ?? "", 'mes' => $requests['mes'] ?? "", 'condicao' => $requests['condicao'] ?? "", 'cursos_id' => $requests['cursos_id'] ?? "", 'classes_id' => $requests['classes_id'] ?? "", 'turnos_id' => $requests['turnos_id'] ?? ""]) }}" target="_blink" class="btn btn-primary float-right"><i class="fas fa-print"></i> Imprimir</a>
-                        </div>
-                        <!-- /.card-header -->
-                        <div class="card-body table-responsive">
-                        <table id="carregarTabelaEstudantes" style="width: 100%" class="table  table-bordered table-striped  ">
-                            <thead>
-                                <tr>
-                                  <th>Nº</th>
-                                  <th>Nome</th>
-                                  <th>Bilhete</th>
-                                  <th>Mês</th>
-                                  <th>Estado</th>
-                                  <th>Multa</th>
-                                  <th>Preço</th>
-                                  <th>Total</th>
-                                  <th>Serviço</th>
-                                  <th>Curso</th>
-                                  <th>Classe</th>
-                                  <th>Turno</th>
-                                  <th style="width: 100px">Acções</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @php
-                                    $multas = 0;
-                                    $preco = 0;
-                                    $total = 0;
-                                @endphp
-                                @foreach ($cartoes as $item)
-                                <tr>
-                                    <td>{{ $item->id }}</td>
-                                    <td><a href="{{ route('shcools.mais-informacao-estudante', Crypt::encrypt($item->estudante->id)) }}">{{ $item->estudante->nome }} {{ $item->estudante->sobre_nome }}</a></td>
-                                    <td>{{ $item->estudante->bilheite }}</td>
-                                    <td>{{ $item->mes($item->month_name) }}</td>
-                                    @if ($item->status == "divida")
-                                     <td class="text-warning">{{ $item->status }}</td> 
-                                    @else
-                                        @if ($item->status == "Pago")
-                                        <td class="text-success">{{ $item->status }}</td> 
-                                        @else
-                                            @if ($item->status == "Nao Pago")
-                                            <td class="text-danger">{{ $item->status }}</td>  
-                                            @else
-                                            <td class="text-info">{{ $item->status }}</td>   
-                                            @endif
-                                        @endif
-                                    @endif
-                                    <td>{{ number_format($item->multa ?? 0, 2, ',', '.') }}</td>
-                                    <td>{{ number_format($item->preco_unitario ?? 0, 2, ',', '.') }}</td>
-                                    <td>{{ number_format((($item->preco_unitario ?? 0) + ($item->multa ?? 0)), 2, ',', '.') }}</td>
-                                    <td>{{ $item->servico->servico ?? "" }}</td>
-                                    <td>{{ $item->estudante->matricula->curso->curso ?? '' }}</td>
-                                    <td>{{ $item->estudante->matricula->classe->classes ?? '' }}</td>
-                                    <td>{{ $item->estudante->matricula->turno->turno ?? '' }}</td>
-                                    <td>
-                                        <a href="{{ route('web.sistuacao-financeiro', Crypt::encrypt($item->estudante->id)) }}" class="btn btn-info"><i class="fas fa-plus"></i> Detalhe</a>
-                                    </td>
-                                    
-                                    @php
-                                        $multas += $item->multa ?? 0;
-                                        $preco += $item->preco_unitario ?? 0;
-                                        $total += (($item->preco_unitario ?? 0) + ($item->multa ?? 0)); 
-                                    @endphp
-                                </tr>
-                                @endforeach
-                                
-                                <tfoot>
-                                    <tr>
-                                        <th>----</th>
-                                        <th>----</th>
-                                        <th>----</th>
-                                        <th>----</th>
-                                        <th>----</th>
-                                        <th>{{ number_format($multas ?? 0, 2, ',', '.') }}</th>
-                                        <th>{{ number_format($preco ?? 0, 2, ',', '.') }}</th>
-                                        <th>{{ number_format($total ?? 0, 2, ',', '.') }}</th>
-                                        <th>----</th>
-                                        <th>----</th>
-                                        <th>----</th>
-                                        <th>----</th>
-                                        <th>----</th>
-                                    </tr>
-                                </tfoot>
-                            </tbody>
-                        </table>
-                        </div>
-                        <!-- /.card-body -->
-                  </div>
-                  
-                   <!-- /.card -->
-                </div>
-            </div>
-        @endif
-
-    </div><!-- /.container-fluid -->
-</div>
-<!-- /.content -->
-@endsection
-
-
-@section('scripts')
-
-  <script>
-    $(function () {
-      $("#carregarTabelaEstudantes").DataTable({
-        language: {
-            url: "{{ asset('plugins/datatables/pt_br.json') }}"
-        },
-        "responsive": true, "lengthChange": false, "autoWidth": false,
-        "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
-      }).buttons().container().appendTo('#carregarTabelaEstudantes_wrapper .col-md-6:eq(0)');
-
-    });
-    
-  </script>
-  
-@endsection --}}
