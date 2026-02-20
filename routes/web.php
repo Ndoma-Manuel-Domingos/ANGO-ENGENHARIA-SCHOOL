@@ -1057,16 +1057,6 @@ Route::group(["middleware" => "auth"], function () {
     Route::resource('isencoes', IsencaoServicoController::class);
     
     
-    // Route::get('/financeiro/isentar/{id}', [FinanceiroController::class, 'isentarPagamento'])->name('web.financeiro-isentar-pagamento');
-    // Route::put('/financeiro/isentar-propina/{id}', [FinanceiroController::class, 'isentarPropina'])->name('web.financeiro-isentar-propina');
-    // Route::put('/financeiro/remover-isentar-propina/{id}', [FinanceiroController::class, 'removerIsentarPropina'])->name('web.financeiro-remover-isentar-propina');
-    // Route::put('/financeiro/isentar-multa/{id}', [FinanceiroController::class, 'isentarMulta'])->name('web.financeiro-isentar-multa');
-    // Route::put('/financeiro/remover-isentar-multa/{id}', [FinanceiroController::class, 'removerIsentarMulta'])->name('web.financeiro-remover-isentar-multa');
-    // Route::put('/financeiro/editar-multa/{id}', [FinanceiroController::class, 'editarMulta'])->name('web.financeiro-editar-multa');
-
-    
-    
-    
     // GESTÃO CANDIDATURAS
     Route::get('/candidaturas/home', [CandidaturaAcademicaController::class, 'candidaturas'])->name('web.candidaturas');
     Route::post('/candidaturas/home', [CandidaturaAcademicaController::class, 'cadastrarcandidaturas'])->name('web.cadastrar-candidaturas');

@@ -11,7 +11,7 @@
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ ENV('APP_NAME') }} | {{ $titulo }}</title>
+    {{-- <title>{{ ENV('APP_NAME') }} | {{ $titulo }}</title> --}}
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -168,7 +168,7 @@
         </div>
         
         <nav class="flex-1 px-4 space-y-1 overflow-y-auto mt-2">
-            <a href="{{ route('paineis.painel-informativo-administrativo') }}"
+            <a href="{{ route('paineis.administrativo') }}"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors">
                 <span class="material-symbols-outlined">dashboard</span>
                 <p class="text-sm font-medium">Dashboard</p>
@@ -199,9 +199,7 @@
             
             <div class="relative">
                 <input class="dropdown-toggle hidden" id="financial-check" type="checkbox" />
-                <label
-                    class="menu-item flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
-                    for="financial-check">
+                <label class="menu-item flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors" for="financial-check">
                     <div class="flex items-center gap-3">
                         <span class="material-symbols-outlined !fill-1">payments</span>
                         <p class="text-sm font-semibold">Financeiro</p>
@@ -215,6 +213,20 @@
                     <a class="block px-8 py-2 text-xs text-slate-500 hover:text-primary dark:hover:text-primary" href="{{ route('home.contas-pagar') }}">Saídas</a>
                     <a class="block px-8 py-2 text-xs text-slate-500 hover:text-primary dark:hover:text-primary" href="{{ route('home.gestao-dividas') }}">Gestão de dívidas</a>
                     <a class="block px-8 py-2 text-xs text-slate-500 hover:text-primary dark:hover:text-primary" href="{{ route('home.isencoes') }}">Isenção de Serviços</a>
+                </div>
+            </div>
+            
+            <div class="relative">
+                <input class="dropdown-toggle hidden" id="services-check" type="checkbox" />
+                <label class="menu-item flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors" for="services-check">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined !fill-1">receipt_long</span>
+                        <p class="text-sm font-semibold">Serviços</p>
+                    </div>
+                    <span class="material-symbols-outlined text-sm transition-transform expand-icon">expand_more</span>
+                </label>
+                <div class="sidebar-dropdown-content bg-slate-50/50 dark:bg-slate-800/30 rounded-lg ml-4 space-y-1">
+                    <a class="block px-8 py-2 text-xs text-slate-500 hover:text-primary dark:hover:text-primary" href="#">Mapa de Pagamentos</a>
                 </div>
             </div>
             
